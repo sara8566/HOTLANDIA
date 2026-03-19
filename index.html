@@ -42,6 +42,7 @@ header p  { font-size:10px; color:#aaa; margin-top:2px; }
 .pill-servicios   { background:#1a3a2a; color:#86efac; }
 .pill-prioridades { background:#5c1a1a; color:#fca5a5; }
 .pill-historico   { background:#1a1a3a; color:#c4b5fd; }
+.pill-afectados   { background:#0f3d3a; color:#5eead4; }
 .pill-update      { background:#713f12; color:#fde68a; }
 .city-severity { margin-top:2px; font-size:10px; font-weight:700; padding:2px 8px; border-radius:8px; display:inline-block; }
 .sev-critica   { background:#7f1d1d; color:#fca5a5; }
@@ -81,6 +82,7 @@ header p  { font-size:10px; color:#aaa; margin-top:2px; }
 .node-prioridades     { background:#dc2626; }
 .node-actualizaciones { background:#d97706; }
 .node-historico       { background:#0f172a; border:2px solid #818cf8 !important; }
+.node-afectados       { background:#134e4a; border:2px solid #5eead4 !important; }
 
 /* FICHA PANEL */
 .ficha-panel { position:absolute; top:0; right:0; width:400px; height:100%; background:rgba(8,15,35,0.98); border-left:2px solid #e94560; transform:translateX(100%); transition:transform 0.3s; z-index:50; display:flex; flex-direction:column; overflow:hidden; }
@@ -124,6 +126,7 @@ header p  { font-size:10px; color:#aaa; margin-top:2px; }
 .hist-m1 { background:#1a2a4a; border-left:4px solid #3b82f6; color:#93c5fd; }
 .hist-m2 { background:#2a1a2a; border-left:4px solid #a855f7; color:#d8b4fe; }
 .hist-m3 { background:#2a1a1a; border-left:4px solid #ef4444; color:#fca5a5; }
+.hist-m4 { background:#1a1a2a; border-left:4px solid #a855f7; color:#e9d5ff; }
 .hist-momento-hdr .fecha { font-size:11px; opacity:0.75; margin-left:auto; }
 .hist-evento {
   margin-left:16px; padding:8px 10px 8px 14px;
@@ -173,7 +176,7 @@ header p  { font-size:10px; color:#aaa; margin-top:2px; }
 <header>
   <div>
     <h1>🗺️ República Democrática de Hotlandia — Centro de Operaciones de Emergencia</h1>
-    <p>Spider View · Ficha unificada por ciudad · Histórico cronológico para toma de decisiones · Fuentes: MD-5-2 al EF-1-15</p>
+    <p>Spider View · Histórico 4 momentos · Personas afectadas · Fuentes: MD-5-2 al EF-1-29 · Actualizado al 03 mayo</p>
   </div>
   <span class="badge">COE · Spider</span>
 </header>
@@ -200,6 +203,7 @@ header p  { font-size:10px; color:#aaa; margin-top:2px; }
         <div class="legend-item" style="font-size:11px">🏛️ Edificios · 🛣️ Vías</div>
         <div class="legend-item" style="font-size:11px">💧 Servicios · ⚠️ Prioridades</div>
         <div class="legend-item" style="font-size:11px">🔄 Actualiz. · 📅 Histórico</div>
+        <div class="legend-item" style="font-size:11px">👥 Afectados</div>
       </div>
       <div class="stats-bar" id="stats-bar"></div>
     </div>
@@ -265,6 +269,7 @@ const HISTORICO = {
       {hora:"11:30", titulo:"Colapso sistema de salud total (EF-1-7)", estado:"critico",
        desc:"Centro de salud no recibe más pacientes. Material médico agotado. Algunos médicos desertaron. Clínica móvil es el único servicio disponible pero recursos casi agotados. 1500 familias adicionales damnificadas. Sin albergue disponible."},
     ],
+    m4: [{hora:"05:00",titulo:"📌 M4 — Rescates y colapso total (EF-1-16)",estado:"agravado",desc:"3 brigadistas rescatados SIN VIDA (04:00 hrs). 6 personas rescatadas con vida pero con lesiones graves. Escuela El Níspero: evaluación pendiente. Centro de salud ABARROTADO. Incendio bodega agroquímicos FUERA DE CONTROL — 30 viviendas consumidas, amenaza más. 23 niños <5 años con IRA. EDA por agua contaminada. Intoxicaciones por gases tóxicos. 1500+ familias damnificadas acumuladas. Caravana desde Los Bayuncos en camino."}]
   },
   tosteno: {
     m1: [
@@ -279,6 +284,7 @@ const HISTORICO = {
       {hora:"09:00", titulo:"Nuevo sismo — múltiples barrios afectados (EF-1-6)", estado:"agravado",
        desc:"B.El Centro: 250 viviendas más colapsadas, ~150 fallecidos, 300+ lesionados graves, 1200 sin hogar. B.La Merced: 50 viviendas colapsadas, ~50 fallecidos, ~200 lesionados, postes energizados en calles. B.Las Cañas: 30 viviendas destruidas, 45 lesionados, niños con bajo nivel nutricional. B.La Bola: 10 fallecidos (6 adultos + 4 niños). Centro ciudad: fosa en calle El Olmo. Rescate correos SUSPENDIDO. Nuevos deslizamientos Cerro El Temblón."},
     ],
+    m4: [{hora:"05:00–12:00",titulo:"📌 M4 — Nuevo deslizamiento y colapso hospitalario (EF-1-28/29)",estado:"agravado",desc:"Las Cañas: NUEVO DESLIZAMIENTO 07:00 hrs — 15 personas soterradas. Hospital: 100 camas llenas, nuevos pacientes en el PISO. Lluvia constante impide habilitar nueva área. IRA + hipotermia en 65 niños <5 años. EDA masiva en adultos mayores. Infecciones en extremidades. Aeropuerto CERRADO (personal abandonó). B.La Merced: 35 fallecidos, 128 lesionados. B.La Bola: 27 fallecidos, 145 lesionados. Rescate correos SUSPENDIDO. Basura acumulada en calles — riesgo ratas."}]
   },
   spr: {
     m1: [
@@ -293,6 +299,7 @@ const HISTORICO = {
       {hora:"04:30", titulo:"Nuevo sismo — agravamiento (EF-1-8)", estado:"agravado",
        desc:"23 fallecidos de los 235 anteriores (12 niños <5 años). El Talud: corregido a 40 viviendas sepultadas. 4 ancianos fallecidos recuperados — morgue temporal en casa comunitaria. Síndico no localizable. 2 instalaciones de alimentos saqueadas. Autobús 'Estrella del Norte' confirmado, víctimas probablemente fallecidas sin maquinaria."},
     ],
+    m4: [{hora:"23:30",titulo:"📌 M4 — Autobús soterrado confirmado (EF-1-26)",estado:"agravado",desc:"Autobús Estrella del Norte: 75 personas soterradas, rescatistas trabajando con palas (muy lento — víctimas probablemente fallecidas). Toldos B.La Chiche AL LÍMITE (800 personas). El Talud: terreno inestable, 67 desaparecidos sin rescate posible aún. 2 cadáveres con lesiones de bala en calles. Malos olores y moscas por cadáveres sin rescatar. B.San Judas: 26 nuevos fallecidos."}]
   },
   analquito: {
     m1: [
@@ -307,6 +314,7 @@ const HISTORICO = {
       {hora:"19:00", titulo:"Nuevo sismo — ciudad nuevamente aislada (EF-1-10)", estado:"agravado",
        desc:"18 personas adicionales rescatadas del banco (3 fallecidas, 5 TCE). Ciudad aislada por nuevos deslizamientos. 1300 nuevas personas afectadas. 250 viviendas a demoler. Planta de agua no funciona. Hombres armados con armas policiales cometiendo robos y secuestro. Local de espectáculos saturado."},
     ],
+    m4: [{hora:"06:00",titulo:"📌 M4 — Colapso social y cadáver torturado (EF-1-17)",estado:"agravado",desc:"Cadáver con señales de tortura encontrado — presunto secuestrado. Local espectáculos HACINADO. EDA, enfermedades de piel e IRA en albergue. Calles de acceso BLOQUEADAS — caravana de ayuda de El Ronquido detuvo vehículos, ingresa a pie. Cadáveres visibles por las calles. 76 nuevas viviendas afectadas, 300 nuevas personas damnificadas."}]
   },
   chanmico: {
     m1: [
@@ -321,6 +329,7 @@ const HISTORICO = {
       {hora:"16:30", titulo:"Nuevo sismo — catástrofe agravada (EF-1-9)", estado:"agravado",
        desc:"1500 nuevos damnificados en 6 barrios (Los Calmados 300, San Juan 150, San Borja 340, La Chinche 231, Los Zánganos 168, La Pedrera 311). Accesos completamente bloqueados. 4 rescatistas Cruz Roja/Bomberos ATRAPADOS en banco. 23 fallecidos adicionales. 2 médicos voluntarios abandonaron. Toldos saturados, intentos de violencia."},
     ],
+    m4: [{hora:"10:30",titulo:"📌 M4 — Epidemias y rescatistas localizados (EF-1-19)",estado:"agravado",desc:"900 nuevas personas damnificadas de 6 barrios. Rescate banco reanudado: 9 rescatados con vida + 6 localizados. 4 rescatistas atrapados AÚN SIN RESCATAR pero localizados. EDA con deshidratación · IRA en niños · Riesgo Tétanos e infecciones graves. Centro de salud COLAPSADO. Personal de salud se ha ido a sus casas. Accesos BLOQUEADOS."}]
   },
   elmalestar: {
     m1: [
@@ -335,6 +344,7 @@ const HISTORICO = {
       {hora:"01:00", titulo:"PRIMER CONTACTO — 02 mayo (EF-1-14)", estado:"nuevo",
        desc:"Pánico general. Viviendas del centro dañadas. Decenas de lesionados (principalmente adultos mayores). Centro salud con 3 médicos y 2 enfermeras con triaje básico. Voluntarios organizaron albergue (550 personas). ALERTA CRÍTICA: Dique río Pensativo AGRIETADO — 34 familias aguas abajo en riesgo. Saqueos reportados (presuntamente de El Ronquido). Electricidad suspendida. Agua irregular."},
     ],
+    m4: [{hora:"14:00",titulo:"📌 M4 — Dique a punto de dinamitar (EF-1-22)",estado:"critico",desc:"Dique Río Pensativo SERIAMENTE AFECTADO — autoridades decidieron DINAMITARLO. 180 personas evacuadas de riberas aguas abajo. 210 viviendas afectadas. 350 lesionados (180 graves con traumatismos severos). 475 personas en albergue iglesia AL LÍMITE. EDA y diarrea en albergue. IRA y fiebre en niños. Hundimientos en calles por ruptura tuberías."}]
   },
   santacruz: {
     m1: [
@@ -349,6 +359,7 @@ const HISTORICO = {
       {hora:"00:00", titulo:"Nuevo sismo — 02 mayo (EF-1-13)", estado:"agravado",
        desc:"Daños en viviendas (mayoría leves). Escuela primaria vieja colapsó (sin personal). Único camino de acceso gravemente dañado — casi imposible paso vehicular. Pozo principal de agua seriamente dañado y anegado. 2 albergues abiertos. Alcalde coordinando con policía y vecinos."},
     ],
+    m4: [{hora:"02:00",titulo:"📌 M4 — Situación controlada (EF-1-27)",estado:"info",desc:"67 viviendas afectadas. 300 desamparadas. 126 lesionados (contusiones — mayoría leve). 0 fallecidos reportados. 2 albergues operativos (bodega municipal + casa comunidad). Vecinos organizados racionando agua. Edificio municipio dañado pero autoridades activas. Necesidades: agua potable, frazadas, artículos cocina, alimentos bebés, medicamentos, lámparas keroseno, toldos, juguetes."}]
   },
   capital: {
     m1: [{hora:"—", titulo:"Sin reportes de daños (MD-5-2/5-8)", estado:"info", desc:"La Capital no fue incluida en los reportes de afectación directa. Aeropuerto presumiblemente operativo. Puerto del Muerto (noreste) almacena el 60% del petróleo del país — estado desconocido."}],
@@ -362,6 +373,7 @@ const HISTORICO = {
       {hora:"05:00", titulo:"🆕 NUEVO — Sismo secundario golpea El Charco (EF-1-4)", estado:"critico",
        desc:"300+ viviendas colapsadas (construcción de adobe). Estación policía desplomada: 3 oficiales fallecidos, 4 gravemente lesionados. Consulta externa de unidad de salud colapsada. Médico y 2 enfermeras ilesas pero sin material. Cientos de heridos y fallecidos atrapados. Caos total. Solo primeros auxilios improvisados."},
     ],
+    m4: [{hora:"12:00–17:00",titulo:"📌 M4 — Colapso sanitario masivo (EF-1-20/21)",estado:"critico",desc:"726+ personas en unidad de salud: 370 trauma tórax, 162 TCE, 25 fracturas expuestas, 127 niños TCE, 9 partos. ~150+ fallecidos confirmados. ~2,075 damnificados. ~454 viviendas afectadas. 65 niños <5 años subsistiendo con agua azucarada. EDA + IRA + deshidratación. Infecciones por material no estéril. 3 agentes AÚN SOTERRADOS en estación policía. Combustible escaso — vehículos próximos a parar."}]
   },
   microleon: {
     m1: [{hora:"—", titulo:"Sin datos previos al sismo secundario", estado:"info", desc:"No hay reportes del 29 de abril para Micoleón. Su situación era desconocida."}],
@@ -370,6 +382,7 @@ const HISTORICO = {
       {hora:"06:30", titulo:"🆕 NUEVO — Sismo + Oleaje / Tsunami (EF-1-5)", estado:"critico",
        desc:"45 viviendas desaparecidas completamente bajo las olas. Todos sus habitantes presuntamente ahogados. Puesto policía portuaria arrasado: 4 agentes desaparecidos, 2 embarcaciones perdidas. Calles anegadas. Muchas viviendas derrumbadas. Centro de salud colapsado parcialmente. Puerto El Vivo seriamente afectado: lanchas y embarcaciones camaroneras perdidas."},
     ],
+    m4: [{hora:"14:30–19:00",titulo:"📌 M4 — Catástrofe epidémica (EF-1-23)",estado:"critico",desc:"196 cuerpos confirmados (122+74 nuevos del mar). Riesgo de entierro sin identificación. 2,500+ sobrevivientes en estado CRÍTICO. EDA masiva en niños con deshidratación severa — condición crítica. Madres dando agua salobre (empeora condición). Sin comida desde hace 20+ horas. Pozos ANEGADOS. Red eléctrica COLAPSADA. Mosquitos masivos — riesgo dengue emergente. Material médico agotado desde hace horas."}]
   },
   montanitas: {
     m1: [{hora:"—", titulo:"Sin datos previos al sismo secundario", estado:"info", desc:"Montañitas no aparece en los reportes del 29 de abril."}],
@@ -378,6 +391,7 @@ const HISTORICO = {
       {hora:"21:00", titulo:"🆕 NUEVO — Ciudad completamente aislada (EF-1-11)", estado:"critico",
        desc:"Ciudad aislada totalmente por deslizamientos de material rocoso. 250 viviendas inhabitables. 2 grupos de turistas atrapados en bosques sin contacto. Registro civil colapsado (4 empleados desaparecidos, presumiblemente fallecidos). Estación policía con daños severos: 6 agentes lesionados, 4 reos escapados. 1500+ heridos con atención muy limitada — 1 médico y 2 enfermeras de paradero desconocido."},
     ],
+    m4: [{hora:"21:00",titulo:"📌 M4 — 25 muertos por falta de atención (EF-1-24)",estado:"critico",desc:"25 personas fallecidas de las 1,500 heridas por falta de tratamiento adecuado. Unidad de salud COLAPSADA TOTALMENTE — no presta ningún servicio. Heridos SIN ATENCIÓN. Riesgo Tétanos y otras infecciones graves. 75 nuevas viviendas destruidas. 300 nuevas personas damnificadas sin albergue. Ciudad sigue AISLADA."}]
   },
   pampidos: {
     m1: [{hora:"—", titulo:"Sin datos del 29 de abril", estado:"info", desc:"Pámpidos no aparece en reportes iniciales."}],
@@ -386,6 +400,7 @@ const HISTORICO = {
       {hora:"22:30", titulo:"🆕 NUEVO — Sismo en madrugada (EF-1-12)", estado:"grave",
        desc:"Mayoría de habitantes dormía. Turistas en bares sufrieron lesiones. Sin evacuaciones ordenadas. 5 agentes policía fallecidos. 1 vehículo policial destruido. Iglesia La Merced (patrimonio nacional): seriamente dañada con INCENDIO ACTIVO en estructura de madera. Sin energía eléctrica. Agua potable irregular. Cientos de turistas a la intemperie sin agua ni alimentos desde la madrugada."},
     ],
+    m4: [{hora:"22:30",titulo:"📌 M4 — Incendio en expansión (EF-1-25)",estado:"critico",desc:"Incendio iglesia La Merced: EN EXPANSIÓN, amenaza casas coloniales vecinas. Voluntarios con quemaduras intentando apagar sin medios. Canales baños termales ROTOS — agua a alta temperatura en calles (peligro). 600 sin albergue (17% niños <5 años). 123 viviendas coloniales afectadas. Sin energía ni agua potable. Caminos dañados (turistas retornaron). Saqueo de abarrotería turística."}]
   },
   bolivar: {
     m1: [{hora:"—", titulo:"Sin datos del 29 de abril", estado:"info", desc:"Bolívar no aparece en reportes iniciales."}],
@@ -394,6 +409,7 @@ const HISTORICO = {
       {hora:"03:00", titulo:"🆕 NUEVO — 880 víctimas, sin comunicación (EF-1-15)", estado:"critico",
        desc:"880 víctimas provisionales. Cientos de desaparecidos. +10,000 sin hogar por grandes olas. El día anterior: 'Fiestas de Poseidón' (turistas nacionales e internacionales entre víctimas). SIN COMUNICACIÓN ALGUNA con la ciudad. Estado de toda la infraestructura: COMPLETAMENTE DESCONOCIDO. Misión de reconocimiento URGENTE."},
     ],
+    m4: [{hora:"09:00",titulo:"📌 M4 — Catástrofe con colapso de autoridad (EF-1-18)",estado:"critico",desc:"930+ lesionados confirmados. 1,200 viviendas totalmente destruidas. 5,500 afectados directos. 75 fallecidos recuperados del mar (millar total posible). 35 turistas desaparecidos, 15 fallecidos. 50% de autoridades locales fallecidas o desaparecidas. 1,300 personas a la intemperie. Sin sistema de salud operativo reportado."}]
   },
   ptomuerto: {
     m1: [{hora:"—", titulo:"Sin reportes de daños (MD-5-2/5-8)", estado:"info", desc:"Puerto del Muerto no fue incluido en los reportes de afectación directa. Almacena el 60% del petróleo del país. Su estado es desconocido — verificación URGENTE."}],
@@ -641,6 +657,26 @@ const CITY_DATA = {
   },
 };
 
+
+const AFECTADOS = {
+  alejandria:  {lesionados:"Cientos (>300 documentados)", afectados:"1,500+ familias damnificadas acumuladas", viviendas:"Múltiples colapsadas (escuelas, edificios públicos)", fallecidos:"3 brigadistas + varios en escuelas", m4_estado:"CRÍTICA"},
+  tosteno:     {lesionados:"128 B.La Merced · 145 B.La Bola · IRA en 65 niños <5 años · EDA masiva", afectados:"500 en cancha fútbol · 700 a la intemperie · total 1,500+", viviendas:"250 colapsadas B.El Centro · 250 dañadas B.La Merced", fallecidos:"25 rescatados de 150 estimados B.El Centro · 35 B.La Merced · 27 B.La Bola · 15 soterrados Las Cañas", m4_estado:"CRÍTICA"},
+  spr:         {lesionados:"Decenas graves trasladadas al centro de salud", afectados:"800+ bajo toldos B.La Chiche · 67 desaparecidos El Talud", viviendas:"Múltiples colapsadas", fallecidos:"26 nuevos B.San Judas · 12 esperando identificación · 2 con lesiones de bala · 67 desap. El Talud", m4_estado:"CRÍTICA"},
+  analquito:   {lesionados:"Cientos — centro de salud colapsado", afectados:"300 nuevas damnificadas (total acumulado muy alto)", viviendas:"76 nuevas afectadas (total acumulado alto)", fallecidos:"1 torturado (presunto secuestrado) + anteriores", m4_estado:"CRÍTICA"},
+  chanmico:    {lesionados:"900 nuevas con lesiones (Los Zánganos 134 · La Pedrera 78 · El Simio 80)", afectados:"900 nuevas damnificadas (total acumulado >2,000)", viviendas:"Sin nuevo dato (total previo alto)", fallecidos:"23 anteriores + 4 rescatistas atrapados", m4_estado:"CRÍTICA"},
+  elmalestar:  {lesionados:"350 (180 de gravedad con traumatismos severos)", afectados:"475 en albergue iglesia (AL LÍMITE)", viviendas:"210 seriamente afectadas", fallecidos:"Sin nuevo reporte", m4_estado:"GRAVE"},
+  elcharco:    {lesionados:"726+ en unidad salud: 370 trauma tórax · 162 TCE · 127 niños TCE · 9 partos · 25 fx expuestas", afectados:"~2,075 damnificados: La Cruz 375 · San Juan 500 · El Centro 1,200", viviendas:"~454: La Cruz 101 · San Juan 123 · El Centro 230", fallecidos:"~150+: La Cruz 35 · San Juan 28 · El Centro 75 · centro salud 18", m4_estado:"CRÍTICA"},
+  microleon:   {lesionados:"2,500+ en estado crítico (EDA · IRA · infecciones · fiebre)", afectados:"2,500+ sobrevivientes sin asistencia · 1,200 sin comida 20+ hrs", viviendas:"75 destruidas (playa) · 240 dañadas y anegadas", fallecidos:"196 confirmados (122 + 74 nuevos del mar)", m4_estado:"CRÍTICA"},
+  montanitas:  {lesionados:"1,500+ heridas · 25 fallecidas por falta de atención", afectados:"300 nuevas damnificadas sin albergue", viviendas:"75 nuevas destruidas", fallecidos:"25 por falta de tratamiento adecuado", m4_estado:"CRÍTICA"},
+  pampidos:    {lesionados:"Decenas politraumatizados · 3 voluntarios con quemaduras", afectados:"600 sin albergue (17% niños <5 años · 12% mujeres adultas)", viviendas:"123 viviendas coloniales seriamente afectadas", fallecidos:"5 agentes de policía", m4_estado:"GRAVE"},
+  bolivar:     {lesionados:"930 lesionadas confirmadas", afectados:"5,500 afectados directos · 1,300 a la intemperie · 35 turistas desaparecidos", viviendas:"1,200 totalmente destruidas · 230 seriamente afectadas", fallecidos:"75 recuperados del mar · ~1,000 posible total · 15 turistas", m4_estado:"CRÍTICA"},
+  santacruz:   {lesionados:"126 (75 hombres · 45 mujeres · 6 niños — contusiones leves principalmente)", afectados:"300 desamparadas", viviendas:"67 afectadas", fallecidos:"0 reportados", m4_estado:"MODERADA"},
+  capital:     {lesionados:"Sin reporte", afectados:"Sin reporte", viviendas:"Sin reporte", fallecidos:"Sin reporte", m4_estado:"OPERATIVA"},
+  ptomuerto:   {lesionados:"Sin reporte", afectados:"Sin reporte", viviendas:"Sin reporte", fallecidos:"Sin reporte", m4_estado:"DESCONOCIDO"},
+  ptomara:     {lesionados:"Sin reporte", afectados:"Sin reporte", viviendas:"Sin reporte", fallecidos:"Sin reporte", m4_estado:"DESCONOCIDO"},
+  ptovivo:     {lesionados:"Sin reporte", afectados:"Sin reporte", viviendas:"Sin reporte", fallecidos:"Sin reporte", m4_estado:"DESCONOCIDO"},
+};
+
 const LAYER_META = {
   edificios:       {label:"🏛️ Edificios",   icon:"🏛️", cls:"node-edificios",       pill:"pill-edificios"},
   vias:            {label:"🛣️ Vías",        icon:"🛣️", cls:"node-vias",            pill:"pill-vias"},
@@ -648,6 +684,7 @@ const LAYER_META = {
   prioridades:     {label:"⚠️ Prioridades", icon:"⚠️", cls:"node-prioridades",      pill:"pill-prioridades"},
   actualizaciones: {label:"🔄 Actualiz.",   icon:"🔄", cls:"node-actualizaciones",  pill:"pill-update"},
   historico:       {label:"📅 Histórico",   icon:"📅", cls:"node-historico",        pill:"pill-historico"},
+  afectados:       {label:"👥 Afectados",   icon:"👥", cls:"node-afectados",        pill:"pill-afectados"},
 };
 
 const SEV_COLORS = {critica:"#dc2626",grave:"#ea580c",moderado:"#d97706",leve:"#16a34a",desconocido:"#4b5563"};
@@ -668,9 +705,10 @@ function percentToPixel(px,py){
 
 function cityLayers(cityId){
   const d=CITY_DATA[cityId]||{};
-  const layers=Object.keys(LAYER_META).filter(l=>l!=="historico"&&d[l]&&d[l].length>0);
+  const layers=Object.keys(LAYER_META).filter(l=>l!=="historico"&&l!=="afectados"&&d[l]&&d[l].length>0);
   const hist=HISTORICO[cityId];
-  if(hist&&(hist.m1?.length||hist.m2?.length||hist.m3?.length)) layers.push("historico");
+  if(hist&&(hist.m1?.length||hist.m2?.length||hist.m3?.length||hist.m4?.length)) layers.push("historico");
+  if(AFECTADOS[cityId]) layers.push("afectados");
   return layers;
 }
 
@@ -771,6 +809,7 @@ function switchTab(e,cityId,layerId){
 function renderFichaBody(cityId,layerId){
   const body=document.getElementById("ficha-body");
   if(layerId==="historico"){ body.innerHTML=renderHistorico(cityId); return; }
+  if(layerId==="afectados"){ body.innerHTML=renderAfectados(cityId); return; }
   const records=CITY_DATA[cityId]?.[layerId]||[];
   if(!records.length){ body.innerHTML=`<div class="empty-layer">Sin registros para esta categoría.</div>`; return; }
   body.innerHTML=records.map(r=>`
@@ -783,12 +822,42 @@ function renderFichaBody(cityId,layerId){
 }
 
 // ─── HISTÓRICO ────────────────────────────────────────────────
+
+function renderAfectados(cityId){
+  const d = AFECTADOS[cityId];
+  if(!d) return '<div class="empty-layer">Sin datos de afectados registrados.</div>';
+  const sevColor = {CRÍTICA:"#dc2626",GRAVE:"#ea580c",MODERADA:"#d97706",OPERATIVA:"#16a34a",DESCONOCIDO:"#4b5563"};
+  const col = sevColor[d.m4_estado] || "#4b5563";
+  return `
+    <div style="background:#0f172a;border:1px solid #1e3a5f;border-radius:8px;padding:12px;margin-bottom:10px;">
+      <div style="color:#5eead4;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">📊 ESTADO ACTUAL — MOMENTO 4</div>
+      <div style="display:inline-block;padding:3px 12px;border-radius:10px;background:${col}33;border:1px solid ${col};color:${col};font-size:11px;font-weight:700;margin-bottom:12px;">${d.m4_estado}</div>
+    </div>
+    <div class="record-card" style="border-left-color:#ef4444;">
+      <div class="record-name">🩹 Personas Lesionadas</div>
+      <div class="record-body">${d.lesionados}</div>
+    </div>
+    <div class="record-card" style="border-left-color:#f97316;">
+      <div class="record-name">🏠 Personas Afectadas / Damnificadas</div>
+      <div class="record-body">${d.afectados}</div>
+    </div>
+    <div class="record-card" style="border-left-color:#eab308;">
+      <div class="record-name">🏚️ Viviendas Afectadas</div>
+      <div class="record-body">${d.viviendas}</div>
+    </div>
+    <div class="record-card" style="border-left-color:#6b7280;">
+      <div class="record-name">💀 Fallecidos Confirmados</div>
+      <div class="record-body">${d.fallecidos}</div>
+    </div>`;
+}
+
 function renderHistorico(cityId){
   const hist=HISTORICO[cityId]||{};
   const momentos=[
     {key:"m1", label:"📌 Momento 1 — 29 de abril", cls:"hist-m1", fecha:"Primer sismo"},
     {key:"m2", label:"📌 Momento 2 — 30 de abril", cls:"hist-m2", fecha:"Primeras 24 hrs"},
     {key:"m3", label:"📌 Momento 3 — 1 y 2 de mayo", cls:"hist-m3", fecha:"Nuevo sismo / Escalada"},
+    {key:"m4", label:"📌 Momento 4 — 2 y 3 de mayo", cls:"hist-m4", fecha:"EF Parte II / Epidemias"},
   ];
   return momentos.map((m,idx)=>{
     const eventos=hist[m.key]||[];

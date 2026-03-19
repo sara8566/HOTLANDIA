@@ -43,6 +43,9 @@ header p  { font-size:10px; color:#aaa; margin-top:2px; }
 .pill-prioridades { background:#5c1a1a; color:#fca5a5; }
 .pill-historico   { background:#1a1a3a; color:#c4b5fd; }
 .pill-afectados   { background:#0f3d3a; color:#5eead4; }
+.pill-sanitario   { background:#3d0f1a; color:#f9a8d4; }
+.pill-recursos    { background:#1a3d00; color:#bef264; }
+.pill-decisiones  { background:#1e0f3d; color:#c4b5fd; }
 .pill-update      { background:#713f12; color:#fde68a; }
 .city-severity { margin-top:2px; font-size:10px; font-weight:700; padding:2px 8px; border-radius:8px; display:inline-block; }
 .sev-critica   { background:#7f1d1d; color:#fca5a5; }
@@ -83,6 +86,9 @@ header p  { font-size:10px; color:#aaa; margin-top:2px; }
 .node-actualizaciones { background:#d97706; }
 .node-historico       { background:#0f172a; border:2px solid #818cf8 !important; }
 .node-afectados       { background:#134e4a; border:2px solid #5eead4 !important; }
+.node-sanitario       { background:#4a0020; border:2px solid #f472b6 !important; }
+.node-recursos        { background:#1e3a00; border:2px solid #84cc16 !important; }
+.node-decisiones      { background:#2d1b69; border:2px solid #a855f7 !important; }
 
 /* FICHA PANEL */
 .ficha-panel { position:absolute; top:0; right:0; width:400px; height:100%; background:rgba(8,15,35,0.98); border-left:2px solid #e94560; transform:translateX(100%); transition:transform 0.3s; z-index:50; display:flex; flex-direction:column; overflow:hidden; }
@@ -176,7 +182,7 @@ header p  { font-size:10px; color:#aaa; margin-top:2px; }
 <header>
   <div>
     <h1>🗺️ República Democrática de Hotlandia — Centro de Operaciones de Emergencia</h1>
-    <p>Spider View · Histórico 4 momentos · Personas afectadas · Fuentes: MD-5-2 al EF-1-29 · Actualizado al 03 mayo</p>
+    <p>Spider View · 10 capas analíticas · Riesgo sanitario · Recursos · Decisiones COE · Fuentes: MD-5-2 al EF-1-29</p>
   </div>
   <span class="badge">COE · Spider</span>
 </header>
@@ -203,7 +209,8 @@ header p  { font-size:10px; color:#aaa; margin-top:2px; }
         <div class="legend-item" style="font-size:11px">🏛️ Edificios · 🛣️ Vías</div>
         <div class="legend-item" style="font-size:11px">💧 Servicios · ⚠️ Prioridades</div>
         <div class="legend-item" style="font-size:11px">🔄 Actualiz. · 📅 Histórico</div>
-        <div class="legend-item" style="font-size:11px">👥 Afectados</div>
+        <div class="legend-item" style="font-size:11px">👥 Afectados · 🦠 Riesgo San.</div>
+        <div class="legend-item" style="font-size:11px">📦 Recursos · 🎯 Decisiones</div>
       </div>
       <div class="stats-bar" id="stats-bar"></div>
     </div>
@@ -677,6 +684,366 @@ const AFECTADOS = {
   ptovivo:     {lesionados:"Sin reporte", afectados:"Sin reporte", viviendas:"Sin reporte", fallecidos:"Sin reporte", m4_estado:"DESCONOCIDO"},
 };
 
+// ═══════════════════════════════════════════════════════════════
+// COE ANALYTICAL LAYERS — Added by AI for decision support
+// ═══════════════════════════════════════════════════════════════
+
+// ── RIESGO SANITARIO ────────────────────────────────────────
+const RIESGO_SANITARIO = {
+  alejandria: {
+    nivel:"CRÍTICO",
+    vectores:[
+      {enfermedad:"Intoxicación por agroquímicos",riesgo:"INMINENTE",poblacion:"Toda la ciudad — gases tóxicos activos",accion:"Evacuación perímetro bodega · Máscaras · Atención urgente síntomas"},
+      {enfermedad:"IRA (Infección Respiratoria Aguda)",riesgo:"ACTIVO",poblacion:"23 niños <5 años confirmados + adultos",accion:"Abrigo urgente · Broncodilatadores · Traslado casos graves"},
+      {enfermedad:"EDA (Enf. Diarreica Aguda)",riesgo:"ACTIVO",poblacion:"Adultos mayores por agua contaminada",accion:"SRO · Agua potable certificada · Separar fuentes contaminadas"},
+      {enfermedad:"Hipotermia",riesgo:"ALTO",poblacion:"Niños a la intemperie (temp. 12°C bajando)",accion:"Frazadas · Carpas con calefacción · Ropa seca urgente"},
+    ],
+    alerta:"⚠️ Incendio agroquímicos: zona de exclusión requerida. Gases tóxicos pueden afectar barrios cercanos según dirección del viento."
+  },
+  tosteno: {
+    nivel:"CRÍTICO",
+    vectores:[
+      {enfermedad:"IRA e Hipotermia",riesgo:"ACTIVO",poblacion:"65 niños <5 años confirmados",accion:"Hospitalización urgente · Abrigo · Antitérmicos"},
+      {enfermedad:"EDA",riesgo:"ACTIVO",poblacion:"Adultos mayores por agua de lluvia",accion:"SRO · Agua potable · Hidratación IV si necesario"},
+      {enfermedad:"Infecciones en heridas",riesgo:"ALTO",poblacion:"Lesionados en extremidades inferiores",accion:"Antibióticos · Curación aséptica · Vigilancia sepsis"},
+      {enfermedad:"Vectores (ratas/mosquitos)",riesgo:"EMERGENTE",poblacion:"Toda la ciudad",accion:"Recolección basura URGENTE · Fumigación preventiva"},
+    ],
+    alerta:"⚠️ Lluvia constante impide habilitar nuevas áreas hospitalarias. Hospital al límite con pacientes en el piso."
+  },
+  spr: {
+    nivel:"CRÍTICO",
+    vectores:[
+      {enfermedad:"Infecciones / Sepsis",riesgo:"ACTIVO",poblacion:"Cadáveres sin rescatar en B.La Chiche (moscas activas)",accion:"Manejo urgente de cadáveres · Antibióticos profilácticos población expuesta"},
+      {enfermedad:"EDA",riesgo:"ALTO",poblacion:"Población bebiendo agua de tuberías rotas",accion:"SRO · Agua potable certificada · Campaña de información"},
+      {enfermedad:"Trauma psicológico",riesgo:"ALTO",poblacion:"Familias de víctimas del autobús soterrado",accion:"Equipos de salud mental · Información oportuna a familiares"},
+    ],
+    alerta:"⚠️ 67 desaparecidos El Talud: terreno inestable activo. No iniciar maniobras sin estabilización geotécnica."
+  },
+  analquito: {
+    nivel:"CRÍTICO",
+    vectores:[
+      {enfermedad:"EDA",riesgo:"ACTIVO",poblacion:"Hacinados en local espectáculos",accion:"SRO · Mejora condiciones sanitarias · Agua potable"},
+      {enfermedad:"Enfermedades de la piel",riesgo:"ACTIVO",poblacion:"Damnificados hacinados",accion:"Higiene · Ropa limpia · Antifúngicos"},
+      {enfermedad:"IRA",riesgo:"ACTIVO",poblacion:"Niños en albergue",accion:"Abrigo · Antitérmicos · Vigilancia"},
+      {enfermedad:"Trauma / Violencia",riesgo:"ALTO",poblacion:"Toda la ciudad — hombres armados activos",accion:"Apoyo policial urgente · Zonas seguras para albergues"},
+    ],
+    alerta:"⚠️ Hombres armados con armas policiales activos. Cadáver con señales de tortura. Seguridad del personal humanitario comprometida."
+  },
+  chanmico: {
+    nivel:"CRÍTICO",
+    vectores:[
+      {enfermedad:"Tétanos",riesgo:"INMINENTE",poblacion:"Heridos sin profilaxis adecuada",accion:"ATT urgente para TODA la población con heridas · Toxoide tetánico"},
+      {enfermedad:"EDA con deshidratación",riesgo:"ACTIVO",poblacion:"Niños y adultos — material médico agotado",accion:"SRO IV urgente · Agua potable · Rehidratación agresiva"},
+      {enfermedad:"IRA",riesgo:"ACTIVO",poblacion:"Niños en albergues saturados",accion:"Abrigo · Broncodilatadores · Separación casos graves"},
+      {enfermedad:"Infecciones graves",riesgo:"ACTIVO",poblacion:"Heridos sin tratamiento curativo/profiláctico",accion:"Antibióticos · Curación aséptica · Vigilancia sepsis"},
+    ],
+    alerta:"⚠️ Ciudad completamente aislada. Toda la respuesta médica debe ser aérea hasta apertura de vía terrestre."
+  },
+  elmalestar: {
+    nivel:"GRAVE",
+    vectores:[
+      {enfermedad:"EDA / Diarrea",riesgo:"ACTIVO",poblacion:"475 albergados en predio iglesia",accion:"SRO · Mejora agua · Saneamiento básico del albergue"},
+      {enfermedad:"IRA / Fiebre",riesgo:"ACTIVO",poblacion:"Niños en albergue",accion:"Abrigo · Antitérmicos · Vigilancia"},
+      {enfermedad:"Traumatismos severos sin atención",riesgo:"ALTO",poblacion:"180 lesionados graves sin tratamiento especializado",accion:"Traslado urgente a hospitales de capital"},
+    ],
+    alerta:"⚠️ ALERTA MÁXIMA: Dique Río Pensativo en proceso de dinamitar. Evacuar aguas abajo ANTES de la operación."
+  },
+  elcharco: {
+    nivel:"CRÍTICO",
+    vectores:[
+      {enfermedad:"Infecciones por material no estéril",riesgo:"ACTIVO",poblacion:"726+ atendidos con material improvisado",accion:"Material estéril URGENTE · Antibióticos · Revisión de todos los tratados"},
+      {enfermedad:"EDA / Deshidratación",riesgo:"ACTIVO",poblacion:"Niños subsistiendo con agua azucarada",accion:"SRO · Agua potable · Alimentación urgente"},
+      {enfermedad:"IRA",riesgo:"ACTIVO",poblacion:"Niños a la intemperie",accion:"Abrigo · Tratamiento · Vigilancia"},
+      {enfermedad:"Desnutrición aguda",riesgo:"EMERGENTE",poblacion:"65 niños <5 años sin alimentos desde ayer",accion:"Alimentos terapéuticos · Leche · Suplementos urgentes"},
+    ],
+    alerta:"⚠️ 3 agentes de policía AÚN soterrados en estación. Combustible escaso — vehículos de emergencia próximos a parar."
+  },
+  microleon: {
+    nivel:"CATÁSTROFE",
+    vectores:[
+      {enfermedad:"EDA con deshidratación severa",riesgo:"CATÁSTROFE",poblacion:"Niños en condición CRÍTICA — madres dando agua salobre",accion:"SRO IV INMEDIATO · Agua potable · Prohibir agua salobre"},
+      {enfermedad:"Dengue",riesgo:"INMINENTE",poblacion:"Toda la ciudad — millares de mosquitos activos",accion:"Fumigación urgente · Eliminar agua estancada · Repelentes"},
+      {enfermedad:"Infecciones en heridas",riesgo:"ACTIVO",poblacion:"Lesionados sin tratamiento — estado febril",accion:"Antibióticos · Curación aséptica · Separar casos febriles"},
+      {enfermedad:"Desnutrición / Inanición",riesgo:"ACTIVO",poblacion:"1,200 personas sin comida 20+ horas",accion:"Alimentos de emergencia URGENTE · Priorizar niños y ancianos"},
+      {enfermedad:"Manejo de cadáveres",riesgo:"CRÍTICO",poblacion:"196+ cuerpos — riesgo de entierro sin identificación",accion:"Morgue de emergencia · Identificación forense · Protocolo OMS"},
+    ],
+    alerta:"⚠️ CATÁSTROFE SANITARIA TOTAL. Toda la infraestructura de salud colapsada. Respuesta externa masiva requerida INMEDIATAMENTE."
+  },
+  montanitas: {
+    nivel:"CRÍTICO",
+    vectores:[
+      {enfermedad:"Tétanos",riesgo:"INMINENTE",poblacion:"1,500+ heridos sin ATT ni tratamiento",accion:"ATT urgente para TODOS · Toxoide tetánico · Personal médico urgente"},
+      {enfermedad:"Infecciones graves / Sepsis",riesgo:"ACTIVO",poblacion:"Heridos sin ninguna atención médica",accion:"Antibióticos · Personal médico · Curación de heridas"},
+      {enfermedad:"Mortalidad evitable",riesgo:"ACTIVO",poblacion:"25 ya fallecidos por falta de atención",accion:"Helicóptero médico URGENTE · Priorizar heridos graves"},
+    ],
+    alerta:"⚠️ 25 fallecidos EVITABLES ya registrados. Cada hora sin atención médica = más muertes. Acceso aéreo es la única opción."
+  },
+  pampidos: {
+    nivel:"GRAVE",
+    vectores:[
+      {enfermedad:"Quemaduras",riesgo:"ACTIVO",poblacion:"Voluntarios con quemaduras por incendio",accion:"Traslado a centro quemados · Vendaje estéril · Hidratación"},
+      {enfermedad:"Quemaduras por agua termal",riesgo:"ACTIVO",poblacion:"Sobrevivientes expuestos a canales rotos",accion:"Señalización de zonas peligrosas · Atención de quemaduras"},
+      {enfermedad:"IRA",riesgo:"ALTO",poblacion:"Turistas a la intemperie toda la noche",accion:"Abrigo · Medicamentos · Traslado"},
+    ],
+    alerta:"⚠️ Incendio iglesia La Merced EN EXPANSIÓN hacia casas coloniales. Control de incendio es prioridad 1."
+  },
+  bolivar: {
+    nivel:"CATÁSTROFE",
+    vectores:[
+      {enfermedad:"Sin sistema de salud",riesgo:"CATÁSTROFE",poblacion:"5,500+ afectados sin respuesta médica",accion:"Despliegue inmediato de hospital de campaña"},
+      {enfermedad:"Trauma psicológico masivo",riesgo:"ALTO",poblacion:"Sobrevivientes de tsunami — turistas internacionales",accion:"Equipos psicosociales · Información a embajadas"},
+      {enfermedad:"Manejo de cadáveres",riesgo:"CRÍTICO",poblacion:"~1,000 posibles fallecidos",accion:"Equipos forenses · Morgue de campaña · Coordinación internacional"},
+    ],
+    alerta:"⚠️ 50% de autoridades locales fallecidas o desaparecidas. Se requiere mando externo inmediato."
+  },
+  santacruz: {nivel:"LEVE",vectores:[{enfermedad:"Contusiones",riesgo:"BAJO",poblacion:"126 lesionados — mayoría leves",accion:"Atención ambulatoria · Analgésicos"}],alerta:"Situación más controlada. Vecinos organizados. Prioridad: agua potable."},
+  capital:   {nivel:"OPERATIVO",vectores:[],alerta:"Sin reportes de afectación. Punto de entrada de ayuda internacional."},
+  ptomuerto: {nivel:"DESCONOCIDO",vectores:[],alerta:"Puerto no reportado. Verificación urgente por riesgo de petróleo."},
+  ptomara:   {nivel:"DESCONOCIDO",vectores:[],alerta:"Sin datos."},
+  ptovivo:   {nivel:"DESCONOCIDO",vectores:[{enfermedad:"Pérdidas económicas pesca",riesgo:"MODERADO",poblacion:"Pescadores artesanales",accion:"Evaluación de daños y apoyo económico"}],alerta:"Instalaciones de pesca afectadas por tsunami."},
+};
+
+// ── RECURSOS Y BRECHAS ──────────────────────────────────────
+const RECURSOS = {
+  alejandria: {
+    disponibles:[
+      {tipo:"Personal salud",estado:"AGOTADO",detalle:"Médicos han desertado. Solo clínica móvil activa."},
+      {tipo:"Medicamentos",estado:"AGOTADO",detalle:"Todos los insumos médicos agotados."},
+      {tipo:"Combustible generadores",estado:"CRÍTICO",detalle:"Generador del centro de salud próximo a apagarse."},
+      {tipo:"Caravana Los Bayuncos",estado:"EN CAMINO",detalle:"Tipo de ayuda y hora de llegada desconocidos."},
+    ],
+    brechas:[
+      {recurso:"Agua potable",urgencia:"INMEDIATA",cantidad:"Tanqueros para ~9,300 personas"},
+      {recurso:"Bomberos / control incendio",urgencia:"INMEDIATA",cantidad:"Unidad especializada en químicos tóxicos"},
+      {recurso:"Albergues",urgencia:"HOY",cantidad:"1,500+ familias sin ubicación"},
+      {recurso:"Personal médico",urgencia:"INMEDIATA",cantidad:"Mínimo 5 médicos + 10 enfermeras"},
+      {recurso:"Generadores diesel",urgencia:"INMEDIATA",cantidad:"Mínimo 3 unidades"},
+    ]
+  },
+  tosteno: {
+    disponibles:[
+      {tipo:"Hospital General",estado:"AL LÍMITE",detalle:"100 camas llenas. Pacientes en el piso."},
+      {tipo:"Cmd. Ingeniería Militar",estado:"DISPONIBLE NO ACTIVADO",detalle:"A 6 km con equipo pesado. Requiere autorización."},
+      {tipo:"Cancha de fútbol",estado:"ALBERGUE PARCIAL",detalle:"500 de 1,200 damnificados ubicados."},
+    ],
+    brechas:[
+      {recurso:"Activación Ing. Militar",urgencia:"INMEDIATA",cantidad:"Autorización de nivel ministerial requerida"},
+      {recurso:"Área hospitalaria adicional",urgencia:"INMEDIATA",cantidad:"Carpa/módulo para 100+ pacientes"},
+      {recurso:"Tanquero agua hospital",urgencia:"INMEDIATA",cantidad:"1 tanquero mínimo 10,000 litros"},
+      {recurso:"Albergue para 700 personas",urgencia:"HOY",cantidad:"Carpas / toldos para intemperie"},
+      {recurso:"Recolección de basura",urgencia:"48 HRS",cantidad:"2 camiones compactadores"},
+    ]
+  },
+  spr: {
+    disponibles:[
+      {tipo:"Grupo búsqueda Km 102",estado:"ACTIVO SIN MEDIOS",detalle:"1 policía + 5 voluntarios con palas solamente."},
+      {tipo:"Toldos B.La Chiche",estado:"AL LÍMITE",detalle:"800 personas — no caben más."},
+      {tipo:"Radio policial",estado:"OPERATIVO",detalle:"Único medio de comunicación confirmado."},
+    ],
+    brechas:[
+      {recurso:"Maquinaria pesada Km 102",urgencia:"INMEDIATA",cantidad:"1 excavadora o retroexcavadora"},
+      {recurso:"Estabilización El Talud",urgencia:"ANTES DE RESCATE",cantidad:"Equipo geotécnico especializado"},
+      {recurso:"Manejo de cadáveres",urgencia:"HOY",cantidad:"Equipo forense + bolsas + morgue temporal"},
+      {recurso:"Refuerzo de seguridad",urgencia:"HOY",cantidad:"Unidad policial para control de orden público"},
+      {recurso:"Albergue adicional",urgencia:"HOY",cantidad:"Para 800+ desbordando B.La Chiche"},
+    ]
+  },
+  analquito: {
+    disponibles:[
+      {tipo:"Local espectáculos municipales",estado:"HACINADO",detalle:"Al máximo de capacidad. Condiciones insalubres."},
+      {tipo:"Caravana El Ronquido",estado:"EN CAMINO A PIE",detalle:"Ingresando a pie con ayuda. Sin vehículos."},
+    ],
+    brechas:[
+      {recurso:"Apertura vial urgente",urgencia:"INMEDIATA",cantidad:"Maquinaria para despejar accesos"},
+      {recurso:"Refuerzo policial armado",urgencia:"INMEDIATA",cantidad:"Para neutralizar hombres armados con armas policiales"},
+      {recurso:"Albergue alternativo",urgencia:"HOY",cantidad:"Predios baldíos + toldos para hacinamiento"},
+      {recurso:"Material médico",urgencia:"INMEDIATA",cantidad:"Equipo completo para cirugía de trauma"},
+    ]
+  },
+  chanmico: {
+    disponibles:[
+      {tipo:"Equipos Cruz Roja y Bomberos",estado:"ACTIVOS",detalle:"Rescate banco reanudado. 9 rescatados con vida."},
+      {tipo:"Hospital local (pequeño)",estado:"COLAPSADO",detalle:"Personal agotado y reducido. Sin insumos."},
+    ],
+    brechas:[
+      {recurso:"Acceso aéreo",urgencia:"INMEDIATA",cantidad:"Helicópteros para evacuación médica y suministros"},
+      {recurso:"ATT (Antitoxina Tetánica)",urgencia:"INMEDIATA",cantidad:"Para TODA la población con heridas"},
+      {recurso:"SRO intravenoso",urgencia:"INMEDIATA",cantidad:"Para casos graves de deshidratación"},
+      {recurso:"10 generadores 5KW diesel",urgencia:"INMEDIATA",cantidad:"Solicitados formalmente — aún sin respuesta"},
+      {recurso:"Hospital de campaña",urgencia:"HOY",cantidad:"Capacidad mínima 200 camas"},
+    ]
+  },
+  elmalestar: {
+    disponibles:[
+      {tipo:"Centro de salud",estado:"OPERATIVO BAJO PRESIÓN",detalle:"3 médicos + 2 enfermeras. Triaje activo."},
+      {tipo:"Albergue iglesia voluntarios",estado:"AL LÍMITE",detalle:"475 personas. No recibe más."},
+      {tipo:"Comisión del dique",estado:"EN SITIO",detalle:"Evaluando antes de dinamitar."},
+    ],
+    brechas:[
+      {recurso:"Dinamitado y evacuación dique",urgencia:"INMEDIATA",cantidad:"Coordinar evacuación 180 personas + explosivos"},
+      {recurso:"Traslado 180 lesionados graves",urgencia:"HOY",cantidad:"A hospitales de la capital"},
+      {recurso:"Insumos médicos básicos",urgencia:"INMEDIATA",cantidad:"Vendas, apósitos, sutura, anestésicos, antibióticos"},
+    ]
+  },
+  elcharco: {
+    disponibles:[
+      {tipo:"Unidad de salud",estado:"COLAPSADA",detalle:"726+ atendidos. 3 médicos voluntarios. Material no estéril."},
+      {tipo:"Vehículos particulares",estado:"ESCASOS / SIN COMBUSTIBLE",detalle:"Próximos a parar por falta de combustible."},
+    ],
+    brechas:[
+      {recurso:"Material médico estéril",urgencia:"INMEDIATA",cantidad:"Para 726+ heridos ya tratados con riesgo de infección"},
+      {recurso:"Combustible",urgencia:"INMEDIATA",cantidad:"Para vehículos de emergencia y evacuación"},
+      {recurso:"Apertura camino (árboles caídos)",urgencia:"INMEDIATA",cantidad:"Motosierras / maquinaria ligera"},
+      {recurso:"Traslado pacientes críticos",urgencia:"INMEDIATA",cantidad:"Ambulancias para casos de TCE y trauma grave"},
+      {recurso:"Alimentos para niños",urgencia:"HOY",cantidad:"65 niños <5 años sin alimentos desde ayer"},
+    ]
+  },
+  microleon: {
+    disponibles:[
+      {tipo:"Personal salud",estado:"AGOTADO",detalle:"Sin material desde hace horas. Al límite."},
+      {tipo:"Voluntarios",estado:"ACTIVOS",detalle:"Ayudando a médicos sin formación médica."},
+    ],
+    brechas:[
+      {recurso:"SRO intravenoso URGENTE",urgencia:"INMEDIATA",cantidad:"Niños en deshidratación crítica — riesgo de muerte"},
+      {recurso:"Agua potable",urgencia:"INMEDIATA",cantidad:"Para 2,500+ personas sin acceso a agua segura"},
+      {recurso:"Alimentos",urgencia:"INMEDIATA",cantidad:"1,200+ personas sin comer 20+ horas"},
+      {recurso:"Fumigación antivectorial",urgencia:"24 HRS",cantidad:"Para prevenir dengue — millares de mosquitos activos"},
+      {recurso:"Morgue de campaña",urgencia:"HOY",cantidad:"196+ cuerpos sin manejo adecuado"},
+      {recurso:"Hospital de campaña",urgencia:"HOY",cantidad:"Toda la infraestructura colapsada"},
+    ]
+  },
+  montanitas: {
+    disponibles:[
+      {tipo:"Nada documentado",estado:"COLAPSO TOTAL",detalle:"Sin unidad de salud, sin comunicación estable, ciudad aislada."},
+    ],
+    brechas:[
+      {recurso:"Helicóptero médico",urgencia:"INMEDIATA",cantidad:"Única forma de acceso. Prioridad #1 absoluta."},
+      {recurso:"Personal médico",urgencia:"INMEDIATA",cantidad:"Mínimo 2 médicos + 4 enfermeras por helicóptero"},
+      {recurso:"ATT / Toxoide tetánico",urgencia:"INMEDIATA",cantidad:"Para 1,500+ heridos sin profilaxis"},
+      {recurso:"Material médico trauma",urgencia:"INMEDIATA",cantidad:"Completo para trauma de campo"},
+    ]
+  },
+  pampidos: {
+    disponibles:[
+      {tipo:"Puesto socorro parque central",estado:"ACTIVO PRECARIO",detalle:"3 estudiantes medicina + voluntarios."},
+      {tipo:"Morgue temporal",estado:"INSTALADA",detalle:"5 agentes policía. Esperando familiares."},
+    ],
+    brechas:[
+      {recurso:"Bomberos para incendio La Merced",urgencia:"INMEDIATA",cantidad:"Unidad con equipo de ataque a incendio estructural"},
+      {recurso:"Cierre canales termales",urgencia:"INMEDIATA",cantidad:"Técnico especializado + equipamiento"},
+      {recurso:"Agua potable",urgencia:"INMEDIATA",cantidad:"600 personas sin acceso"},
+      {recurso:"Traslado politraumatizados",urgencia:"HOY",cantidad:"A hospitales de la capital — convenio con Alejandría inoperante"},
+    ]
+  },
+  bolivar: {
+    disponibles:[
+      {tipo:"Prácticamente ninguno",estado:"COLAPSO TOTAL",detalle:"50% autoridades locales fallecidas o desaparecidas."},
+    ],
+    brechas:[
+      {recurso:"Mando de emergencia externo",urgencia:"INMEDIATA",cantidad:"Equipo COE nacional debe asumir coordinación"},
+      {recurso:"Hospital de campaña",urgencia:"INMEDIATA",cantidad:"Para 930+ lesionados sin atención"},
+      {recurso:"Rescate marítimo",urgencia:"INMEDIATA",cantidad:"Buques y buzos para ~1,000 posibles fallecidos en el mar"},
+      {recurso:"Comunicaciones de emergencia",urgencia:"INMEDIATA",cantidad:"Satélite / radio para restablecer contacto"},
+      {recurso:"Equipo forense internacional",urgencia:"HOY",cantidad:"Para identificación de turistas extranjeros"},
+    ]
+  },
+  santacruz: {
+    disponibles:[
+      {tipo:"Alcaldía activa",estado:"COORDINANDO",detalle:"Alcalde organizando con policía y vecinos."},
+      {tipo:"2 albergues operativos",estado:"FUNCIONALES",detalle:"Bodega municipal + casa comunidad."},
+      {tipo:"Vecinos organizados",estado:"ACTIVOS",detalle:"Racionando agua. Priorizando niños y ancianos."},
+    ],
+    brechas:[
+      {recurso:"Agua potable",urgencia:"HOY",cantidad:"Pozo principal dañado — población organizando lo que queda"},
+      {recurso:"Reparación camino acceso",urgencia:"HOY",cantidad:"Maquinaria ligera para despejar grietas"},
+    ]
+  },
+  capital:   {disponibles:[{tipo:"Aeropuerto",estado:"OPERATIVO",detalle:"Principal puerta de entrada para ayuda."}],brechas:[]},
+  ptomuerto: {disponibles:[],brechas:[{recurso:"Inspección urgente",urgencia:"HOY",cantidad:"Puerto con 60% petróleo nacional — estado desconocido"}]},
+  ptomara:   {disponibles:[],brechas:[]},
+  ptovivo:   {disponibles:[{tipo:"Puerto artesanal",estado:"DAÑADO",detalle:"Instalaciones afectadas por tsunami."}],brechas:[]},
+};
+
+// ── DECISIONES COE ──────────────────────────────────────────
+const DECISIONES_COE = {
+  alejandria: [
+    {prioridad:1, accion:"EVACUAR perímetro bodega agroquímicos — gases tóxicos en expansión",tipo:"INMEDIATA",responsable:"Alcaldía + Bomberos + Salud",razon:"Intoxicaciones ya reportadas. Sin control = masivo"},
+    {prioridad:2, accion:"ENVIAR combustible diesel al centro de salud (clínica móvil)",tipo:"INMEDIATA",responsable:"Logística COE",razon:"Generador próximo a apagarse = pérdida de único punto de atención"},
+    {prioridad:3, accion:"INSTALAR albergues para 1,500 familias con calefacción",tipo:"HOY",responsable:"Gestión albergues COE",razon:"Temperatura 12°C bajando. Niños con hipotermia activa"},
+    {prioridad:4, accion:"COORDINAR llegada caravana Los Bayuncos — establecer punto de recepción",tipo:"HOY",responsable:"Logística COE",razon:"Ayuda en camino sin hora ni tipo conocido"},
+  ],
+  tosteno: [
+    {prioridad:1, accion:"ACTIVAR Comando de Ingeniería Militar — requiere autorización ministerial",tipo:"INMEDIATA",responsable:"Ministro de Defensa vía COE Nacional",razon:"A 6 km. Equipo pesado disponible. No activado por falta de orden."},
+    {prioridad:2, accion:"RESCATE URGENTE — 15 soterrados en deslizamiento Las Cañas (07:00 hrs hoy)",tipo:"INMEDIATA",responsable:"Equipo rescate + Ing. Militar",razon:"Deslizamiento fresco. Sobrevivientes posibles si se actúa en horas."},
+    {prioridad:3, accion:"HABILITAR área hospitalaria de emergencia bajo carpa (lluvia activa)",tipo:"HOY",responsable:"Salud + Logística",razon:"100 camas llenas. Pacientes en el piso. Sin espacio = mayor mortalidad."},
+    {prioridad:4, accion:"INICIAR recolección de basura — riesgo vectorial inminente",tipo:"48 HRS",responsable:"Municipalidad",razon:"Basura sin recoger desde el sismo. Perros merodeando. Ratas esperables."},
+  ],
+  spr: [
+    {prioridad:1, accion:"ENVIAR maquinaria pesada al Km 102 — 75 personas soterradas en autobús",tipo:"INMEDIATA",responsable:"Cmd. Ingeniería Militar / COE",razon:"Cada hora = menos sobrevivientes. Solo palas disponibles ahora."},
+    {prioridad:2, accion:"SOLICITAR evaluación geotécnica El Talud — antes de cualquier rescate",tipo:"INMEDIATA",responsable:"Ingenieros civiles COE",razon:"67 desaparecidos pero terreno activamente inestable. Rescate prematuro = nuevas víctimas."},
+    {prioridad:3, accion:"DESPLEGAR unidad policial para seguridad — 2 cadáveres con heridas de bala",tipo:"HOY",responsable:"Ministerio de Seguridad",razon:"Atracos activos. Familias regresando a viviendas por miedo a saqueos."},
+    {prioridad:4, accion:"ACTIVAR protocolo manejo de cadáveres — malos olores y moscas activos",tipo:"HOY",responsable:"Salud + Forense",razon:"Cadáveres sin rescatar en B.La Chiche desde hace días. Riesgo epidémico."},
+  ],
+  analquito: [
+    {prioridad:1, accion:"DESPLEGAR unidad policial armada — hombres armados con armas policiales activos",tipo:"INMEDIATA",responsable:"Ministerio de Seguridad",razon:"Cadáver torturado encontrado. Personal humanitario en riesgo."},
+    {prioridad:2, accion:"ABRIR vías de acceso — caravana de El Ronquido bloqueada con grandes paquetes de ayuda",tipo:"INMEDIATA",responsable:"Ingeniería Militar / COE",razon:"Ayuda ya disponible y físicamente cercana pero inaccesible."},
+    {prioridad:3, accion:"MEJORAR condiciones sanitarias en albergue hacinado",tipo:"HOY",responsable:"Salud + Logística",razon:"EDA, enfermedades de piel e IRA activas en hacinamiento."},
+  ],
+  chanmico: [
+    {prioridad:1, accion:"DESPLEGAR helicópteros con ATT y material médico — única vía de acceso",tipo:"INMEDIATA",responsable:"Fuerza Aérea / COE Nacional",razon:"Ciudad completamente aislada. Riesgo Tétanos inminente. Sin acceso terrestre."},
+    {prioridad:2, accion:"ACTIVAR aeropuerto Santa Cruz con generador disponible",tipo:"INMEDIATA",responsable:"Autoridad aeroportuaria + técnico",razon:"Generador en sitio. Solo falta activación. Única plataforma de acceso aéreo."},
+    {prioridad:3, accion:"RESCATAR 4 rescatistas Cruz Roja/Bomberos atrapados en banco",tipo:"INMEDIATA",responsable:"Equipos rescate especializados",razon:"Personal humanitario en riesgo. Prioritario para moral y operatividad."},
+    {prioridad:4, accion:"ESTABLECER corredor humanitario aéreo hasta apertura vía terrestre",tipo:"HOY",responsable:"COE Nacional + Fuerza Aérea",razon:"1,200+ personas en situación crítica requieren suministros continuos."},
+  ],
+  elmalestar: [
+    {prioridad:1, accion:"COORDINAR dinamitado del dique — confirmar evacuación de 180 personas ANTES",tipo:"INMEDIATA",responsable:"Alcaldía + Ingeniería + Salud",razon:"Si el dique rompe sin evacuar = catástrofe adicional con víctimas evitables."},
+    {prioridad:2, accion:"TRASLADAR 180 lesionados graves a hospitales de la capital",tipo:"HOY",responsable:"Salud + Transporte COE",razon:"Centro de salud sin capacidad para trauma severo. Mortalidad aumenta por hora."},
+    {prioridad:3, accion:"REFORZAR albergue de la iglesia — 475 personas al límite con EDA activa",tipo:"HOY",responsable:"Logística + Salud",razon:"Albergue colapsará sin apoyo. EDA puede volverse epidemia en espacio cerrado."},
+  ],
+  elcharco: [
+    {prioridad:1, accion:"ENVIAR combustible de emergencia — vehículos de rescate próximos a parar",tipo:"INMEDIATA",responsable:"Logística COE",razon:"Sin vehículos = sin traslados = más fallecidos en unidad de salud."},
+    {prioridad:2, accion:"ABRIR camino de ingreso (árboles caídos) — médicos no han podido llegar",tipo:"INMEDIATA",responsable:"Ingeniería Militar / Motosierras",razon:"Personal médico contratado bloqueado. 726+ heridos con material no estéril."},
+    {prioridad:3, accion:"ENVIAR material médico estéril para los 726+ ya tratados",tipo:"INMEDIATA",responsable:"Salud + Logística",razon:"Tratados con material no estéril. Riesgo de infección masiva."},
+    {prioridad:4, accion:"RESCATAR a 3 agentes de policía aún soterrados en estación",tipo:"HOY",responsable:"Equipos rescate + maquinaria",razon:"Personal de seguridad. Posibles sobrevivientes si se actúa pronto."},
+  ],
+  microleon: [
+    {prioridad:1, accion:"ENVIAR SRO intravenoso de emergencia — niños en deshidratación crítica",tipo:"INMEDIATA",responsable:"Salud COE + Fuerza Aérea",razon:"Niños muriendo por deshidratación. Madres dando agua salobre que empeora el cuadro."},
+    {prioridad:2, accion:"ENVIAR agua potable y alimentos — 1,200+ sin comida 20+ horas",tipo:"INMEDIATA",responsable:"Logística COE",razon:"Inanición inminente. Vulnerabilidad extrema en niños y adultos mayores."},
+    {prioridad:3, accion:"ESTABLECER morgue de campaña — 196+ cuerpos en playa sin manejo",tipo:"HOY",responsable:"Salud + Forense + Apoyo internacional",razon:"Sin morgue = entierros sin identificación. Riesgo legal y epidémico."},
+    {prioridad:4, accion:"FUMIGACIÓN antivectorial preventiva — millares de mosquitos activos",tipo:"24 HRS",responsable:"Salud Pública",razon:"Riesgo de dengue emergente. Toda la ciudad anegada con agua estancada."},
+  ],
+  montanitas: [
+    {prioridad:1, accion:"DESPLEGAR helicóptero médico CON ATT — única forma de llegar",tipo:"INMEDIATA",responsable:"Fuerza Aérea + Salud COE",razon:"25 ya fallecidos por falta de atención. Cada hora = más muertes EVITABLES."},
+    {prioridad:2, accion:"ESTABLECER puente aéreo para evacuación de heridos graves",tipo:"INMEDIATA",responsable:"COE Nacional + Fuerza Aérea",razon:"1,500 heridos. Sin unidad de salud. Sin acceso terrestre. Solo el aire."},
+    {prioridad:3, accion:"LOCALIZAR a los 2 grupos de turistas atrapados en bosques",tipo:"HOY",responsable:"Equipos SAR (Search and Rescue)",razon:"Turistas en bosques desde el sismo. Estado desconocido. Posibles sobrevivientes."},
+  ],
+  pampidos: [
+    {prioridad:1, accion:"ENVIAR bomberos para controlar incendio Iglesia La Merced",tipo:"INMEDIATA",responsable:"Bomberos + Municipio",razon:"Incendio en expansión hacia casas coloniales. Patrimonio nacional y vidas en riesgo."},
+    {prioridad:2, accion:"CERRAR y señalizar canales de baños termales rotos",tipo:"INMEDIATA",responsable:"Municipio + Ingeniería",razon:"Agua a alta temperatura en calles. Riesgo de quemaduras para sobrevivientes."},
+    {prioridad:3, accion:"TRASLADAR politraumatizados a hospitales de la capital",tipo:"HOY",responsable:"Salud + Transporte",razon:"Convenio con Alejandría inoperante. Solo capital puede recibir."},
+  ],
+  bolivar: [
+    {prioridad:1, accion:"DESPLEGAR equipo COE nacional para asumir mando — autoridades locales colapsadas",tipo:"INMEDIATA",responsable:"COE Nacional / Presidencia",razon:"50% autoridades locales fallecidas. Sin mando no hay respuesta organizada."},
+    {prioridad:2, accion:"ACTIVAR protocolo internacional para turistas extranjeros desaparecidos",tipo:"INMEDIATA",responsable:"Cancillería + COE Nacional",razon:"35 turistas desaparecidos. Obligación legal y diplomática de informar a embajadas."},
+    {prioridad:3, accion:"DESPLEGAR hospital de campaña y rescate marítimo",tipo:"INMEDIATA",responsable:"Fuerzas Armadas + OPS",razon:"930+ lesionados sin ningún sistema de salud. ~1,000 posibles fallecidos en el mar."},
+  ],
+  santacruz: [
+    {prioridad:1, accion:"ENVIAR agua potable y suministros básicos solicitados",tipo:"HOY",responsable:"Logística COE",razon:"Situación más estable. Vecinos organizados. No perder esa organización por falta de apoyo."},
+    {prioridad:2, accion:"REPARAR camino de acceso — casi imposible paso vehicular",tipo:"HOY",responsable:"Obras Públicas / COE",razon:"Aislamiento leve pero bloquea ayuda futura."},
+  ],
+  capital:   {decisiones:[{prioridad:1,accion:"Mantener aeropuerto como hub de ayuda internacional",tipo:"CONTINUA",responsable:"Autoridades aeroportuarias",razon:"Principal punto de entrada para ayuda."}]},
+  ptomuerto: {decisiones:[{prioridad:1,accion:"Inspección urgente del Puerto y reservas de petróleo",tipo:"HOY",responsable:"Ministerio de Energía",razon:"60% del petróleo nacional. Estado desconocido = riesgo energético nacional."}]},
+  ptomara:   {decisiones:[]},
+  ptovivo:   {decisiones:[]},
+};
+
+// fix: flatten arrays where object was used
+Object.keys(DECISIONES_COE).forEach(k => {
+  if (DECISIONES_COE[k] && DECISIONES_COE[k].decisiones) {
+    DECISIONES_COE[k] = DECISIONES_COE[k].decisiones;
+  }
+});
+
 const LAYER_META = {
   edificios:       {label:"🏛️ Edificios",   icon:"🏛️", cls:"node-edificios",       pill:"pill-edificios"},
   vias:            {label:"🛣️ Vías",        icon:"🛣️", cls:"node-vias",            pill:"pill-vias"},
@@ -685,6 +1052,9 @@ const LAYER_META = {
   actualizaciones: {label:"🔄 Actualiz.",   icon:"🔄", cls:"node-actualizaciones",  pill:"pill-update"},
   historico:       {label:"📅 Histórico",   icon:"📅", cls:"node-historico",        pill:"pill-historico"},
   afectados:       {label:"👥 Afectados",   icon:"👥", cls:"node-afectados",        pill:"pill-afectados"},
+  sanitario:       {label:"🦠 Riesgo San.",  icon:"🦠", cls:"node-sanitario",        pill:"pill-sanitario"},
+  recursos:        {label:"📦 Recursos",     icon:"📦", cls:"node-recursos",         pill:"pill-recursos"},
+  decisiones:      {label:"🎯 Decisiones",   icon:"🎯", cls:"node-decisiones",       pill:"pill-decisiones"},
 };
 
 const SEV_COLORS = {critica:"#dc2626",grave:"#ea580c",moderado:"#d97706",leve:"#16a34a",desconocido:"#4b5563"};
@@ -709,6 +1079,9 @@ function cityLayers(cityId){
   const hist=HISTORICO[cityId];
   if(hist&&(hist.m1?.length||hist.m2?.length||hist.m3?.length||hist.m4?.length)) layers.push("historico");
   if(AFECTADOS[cityId]) layers.push("afectados");
+  if(RIESGO_SANITARIO[cityId]) layers.push("sanitario");
+  if(RECURSOS[cityId]) layers.push("recursos");
+  if(DECISIONES_COE[cityId] && (Array.isArray(DECISIONES_COE[cityId]) ? DECISIONES_COE[cityId].length : true)) layers.push("decisiones");
   return layers;
 }
 
@@ -810,6 +1183,9 @@ function renderFichaBody(cityId,layerId){
   const body=document.getElementById("ficha-body");
   if(layerId==="historico"){ body.innerHTML=renderHistorico(cityId); return; }
   if(layerId==="afectados"){ body.innerHTML=renderAfectados(cityId); return; }
+  if(layerId==="sanitario"){  body.innerHTML=renderRiesgoSanitario(cityId); return; }
+  if(layerId==="recursos"){   body.innerHTML=renderRecursos(cityId); return; }
+  if(layerId==="decisiones"){ body.innerHTML=renderDecisionesCOE(cityId); return; }
   const records=CITY_DATA[cityId]?.[layerId]||[];
   if(!records.length){ body.innerHTML=`<div class="empty-layer">Sin registros para esta categoría.</div>`; return; }
   body.innerHTML=records.map(r=>`
@@ -849,6 +1225,78 @@ function renderAfectados(cityId){
       <div class="record-name">💀 Fallecidos Confirmados</div>
       <div class="record-body">${d.fallecidos}</div>
     </div>`;
+}
+
+// ── RENDER RIESGO SANITARIO ──────────────────────────────────
+function renderRiesgoSanitario(cityId){
+  const d = RIESGO_SANITARIO[cityId];
+  if(!d) return '<div class="empty-layer">Sin datos de riesgo sanitario.</div>';
+  const nc = {CATÁSTROFE:"#dc2626",CRÍTICO:"#dc2626",GRAVE:"#ea580c",MODERADO:"#d97706",LEVE:"#16a34a",OPERATIVO:"#16a34a",DESCONOCIDO:"#4b5563"};
+  const col = nc[d.nivel] || "#4b5563";
+  let html = `<div style="background:#1a0010;border:1px solid ${col};border-radius:8px;padding:10px 12px;margin-bottom:12px;">
+    <div style="color:${col};font-size:12px;font-weight:800;margin-bottom:4px;">🦠 RIESGO SANITARIO: ${d.nivel}</div>
+    <div style="color:#ddd;font-size:11px;">${d.alerta}</div>
+  </div>`;
+  if(d.vectores && d.vectores.length > 0){
+    html += d.vectores.map(v => {
+      const rc = {CATÁSTROFE:"#7f1d1d",INMINENTE:"#7f1d1d",ACTIVO:"#7c2d12",ALTO:"#713f12",EMERGENTE:"#1e3a5f",MODERADO:"#374151",BAJO:"#14532d"}[v.riesgo]||"#374151";
+      const rct = {CATÁSTROFE:"#fca5a5",INMINENTE:"#fca5a5",ACTIVO:"#fdba74",ALTO:"#fde68a",EMERGENTE:"#93c5fd",MODERADO:"#d1d5db",BAJO:"#86efac"}[v.riesgo]||"#d1d5db";
+      return `<div class="record-card" style="border-left-color:${rc}22;background:#1a0a10;">
+        <div class="record-name">${v.enfermedad}</div>
+        <div class="record-body"><span class="tag" style="background:${rc};color:${rct}">${v.riesgo}</span></div>
+        <div class="record-body"><strong style="color:#f87171">Población:</strong> ${v.poblacion}</div>
+        <div class="record-body" style="margin-top:3px"><strong style="color:#86efac">Acción:</strong> ${v.accion}</div>
+      </div>`;
+    }).join("");
+  }
+  return html;
+}
+
+// ── RENDER RECURSOS Y BRECHAS ────────────────────────────────
+function renderRecursos(cityId){
+  const d = RECURSOS[cityId];
+  if(!d) return '<div class="empty-layer">Sin datos de recursos.</div>';
+  let html = "";
+  if(d.disponibles && d.disponibles.length > 0){
+    html += `<div style="color:#5eead4;font-size:10px;font-weight:700;text-transform:uppercase;margin-bottom:8px;margin-top:4px;">✅ Recursos disponibles</div>`;
+    html += d.disponibles.map(r => {
+      const sc = {AGOTADO:"#7f1d1d",COLAPSADO:"#7f1d1d","AL LÍMITE":"#7c2d12","ACTIVO SIN MEDIOS":"#713f12","DISPONIBLE NO ACTIVADO":"#1e3a5f","EN CAMINO":"#14532d","ACTIVOS":"#14532d","COORDINANDO":"#14532d","FUNCIONALES":"#14532d","OPERATIVO":"#14532d","HACINADO":"#7c2d12","EN SITIO":"#1e3a5f","DAÑADO":"#7c2d12","COLAPSO TOTAL":"#7f1d1d"}[r.estado]||"#374151";
+      return `<div class="record-card" style="background:#0a1a0a;">
+        <div class="record-name">${r.tipo} <span class="tag" style="background:${sc};color:#fff">${r.estado}</span></div>
+        <div class="record-body" style="color:#aaa">${r.detalle}</div>
+      </div>`;
+    }).join("");
+  }
+  if(d.brechas && d.brechas.length > 0){
+    html += `<div style="color:#f87171;font-size:10px;font-weight:700;text-transform:uppercase;margin-bottom:8px;margin-top:12px;">⚠️ Brechas críticas (lo que FALTA)</div>`;
+    html += d.brechas.map(b => {
+      const uc = {INMEDIATA:"#dc2626","ANTES DE RESCATE":"#ea580c",HOY:"#d97706","24 HRS":"#2563eb","48 HRS":"#16a34a","CONTINUA":"#16a34a"}[b.urgencia]||"#4b5563";
+      return `<div class="record-card" style="background:#1a0a0a;border-left-color:#dc2626;">
+        <div class="record-name">${b.recurso}</div>
+        <div class="record-body"><span class="tag" style="background:${uc};color:#fff">${b.urgencia}</span> ${b.cantidad}</div>
+      </div>`;
+    }).join("");
+  }
+  return html || '<div class="empty-layer">Sin datos de recursos.</div>';
+}
+
+// ── RENDER DECISIONES COE ────────────────────────────────────
+function renderDecisionesCOE(cityId){
+  const arr = DECISIONES_COE[cityId];
+  if(!arr || !arr.length) return '<div class="empty-layer">Sin decisiones registradas para esta ciudad.</div>';
+  const tc = {INMEDIATA:"#dc2626",HOY:"#ea580c","24 HRS":"#d97706","48 HRS":"#2563eb",CONTINUA:"#16a34a"}; 
+  return arr.map(d => `
+    <div class="record-card" style="border-left-color:#a855f7;background:#0f0a1a;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+        <div style="background:#7c3aed;color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;flex-shrink:0">${d.prioridad}</div>
+        <div class="record-name" style="margin:0">${d.accion}</div>
+      </div>
+      <div class="record-body">
+        <span class="tag" style="background:${tc[d.tipo]||"#4b5563"};color:#fff">${d.tipo}</span>
+        <span class="tag" style="background:#1e3a5f;color:#93c5fd">${d.responsable}</span>
+      </div>
+      <div class="record-body" style="margin-top:5px;color:#c4b5fd"><strong>Justificación:</strong> ${d.razon}</div>
+    </div>`).join("");
 }
 
 function renderHistorico(cityId){

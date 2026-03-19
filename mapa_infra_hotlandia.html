@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>República Democrática de Hotlandia — Daños a Infraestructura</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #1a1a2e; color: #eee; overflow: hidden; }
+
+  header {
+    background: linear-gradient(135deg, #16213e, #0f3460);
+    padding: 12px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 2px solid #e94560; height: 60px;
+  }
+  header h1 { font-size: 16px; color: #fff; font-weight: 700; }
+  header p { font-size: 11px; color: #aaa; margin-top: 2px; }
+  .badge { background: #e94560; color: #fff; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+
+  .layout { display: flex; height: calc(100vh - 60px); }
+
+  .sidebar {
+    width: 310px; min-width: 260px; background: #16213e;
+    border-right: 1px solid #0f3460;
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .sidebar-title {
+    padding: 10px 14px; background: #0f3460;
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; color: #aaa; flex-shrink: 0;
+  }
+  .layer-tabs { display: flex; border-bottom: 1px solid #0f3460; flex-shrink: 0; }
+  .layer-tab {
+    flex: 1; padding: 8px 4px; text-align: center; font-size: 10px;
+    cursor: pointer; background: transparent; border: none; color: #888;
+    border-bottom: 2px solid transparent; transition: all 0.2s; line-height: 1.3;
+  }
+  .layer-tab.active { color: #fff; border-bottom-color: #e94560; background: #1a2a4a; }
+  .layer-tab:hover:not(.active) { background: #1a2540; color: #bbb; }
+
+  .filter-row { padding: 8px 12px; display: flex; gap: 5px; flex-wrap: wrap; border-bottom: 1px solid #0f3460; flex-shrink: 0; }
+  .filter-btn {
+    padding: 3px 8px; border-radius: 10px; border: 1px solid #0f3460;
+    font-size: 10px; cursor: pointer; background: transparent; color: #bbb; transition: all 0.2s;
+  }
+  .filter-btn.active { background: #e94560; border-color: #e94560; color: #fff; font-weight: 600; }
+  .filter-btn:hover:not(.active) { background: #1e3a6e; }
+
+  .item-list { flex: 1; overflow-y: auto; padding: 6px; }
+  .layer-panel { display: none; flex-direction: column; height: 100%; overflow: hidden; }
+  .layer-panel.active { display: flex; }
+
+  .item-card {
+    background: #1e2d50; border: 1px solid #0f3460; border-radius: 7px;
+    padding: 9px 11px; margin-bottom: 6px; cursor: pointer;
+    transition: all 0.2s; border-left: 4px solid transparent;
+  }
+  .item-card:hover { background: #253c6e; transform: translateX(2px); }
+  .item-card.active { background: #253c6e; border-left-color: #e94560; }
+  .item-city { font-size: 10px; color: #7ab8f5; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  .item-name { font-size: 12px; color: #eee; font-weight: 600; margin: 2px 0; line-height: 1.3; }
+  .item-type { font-size: 10px; color: #aaa; }
+  .status-badge {
+    display: inline-block; margin-top: 4px;
+    padding: 2px 7px; border-radius: 8px; font-size: 10px; font-weight: 700;
+  }
+  .status-colapsado    { background: #7f1d1d; color: #fca5a5; }
+  .status-danado       { background: #7c2d12; color: #fdba74; }
+  .status-operativo    { background: #14532d; color: #86efac; }
+  .status-saturado     { background: #713f12; color: #fde68a; }
+  .status-bloqueado    { background: #4c1d95; color: #c4b5fd; }
+  .status-comprometido { background: #1e3a5f; color: #93c5fd; }
+  .status-suspendido   { background: #7f1d1d; color: #fca5a5; }
+  .status-desconocido  { background: #374151; color: #d1d5db; }
+  .status-critica      { background: #7f1d1d; color: #fca5a5; }
+  .status-alta         { background: #7c2d12; color: #fdba74; }
+
+  .map-container { flex: 1; position: relative; overflow: hidden; background: #0d1b2a; }
+  .map-wrapper { position: relative; width: 100%; height: 100%; }
+  #map-image { width: 100%; height: 100%; object-fit: contain; display: block; }
+  #markers-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+
+  .marker {
+    position: absolute; transform: translate(-50%, -50%);
+    cursor: pointer; transition: transform 0.2s;
+    z-index: 10; pointer-events: all;
+  }
+  .marker:hover { transform: translate(-50%, -50%) scale(1.25); z-index: 20; }
+  .marker-dot {
+    width: 32px; height: 32px; border-radius: 50%;
+    border: 3px solid rgba(255,255,255,0.9);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; box-shadow: 0 0 10px rgba(0,0,0,0.7); position: relative;
+  }
+  .marker-dot.pulse::after {
+    content: ''; position: absolute; width: 100%; height: 100%; border-radius: 50%;
+    animation: pulse 1.6s infinite; border: 2px solid rgba(220,38,38,0.8);
+  }
+  @keyframes pulse { 0% { transform: scale(1); opacity: 0.9; } 100% { transform: scale(2.8); opacity: 0; } }
+
+  .dot-colapsado    { background: #dc2626; }
+  .dot-danado       { background: #ea580c; }
+  .dot-saturado     { background: #d97706; }
+  .dot-operativo    { background: #16a34a; }
+  .dot-bloqueado    { background: #7c3aed; }
+  .dot-comprometido { background: #2563eb; }
+  .dot-suspendido   { background: #b91c1c; }
+  .dot-desconocido  { background: #4b5563; }
+  .dot-critica      { background: #dc2626; }
+  .dot-alta         { background: #ea580c; }
+  .dot-nueva        { background: #15803d; border-color: #86efac !important; }
+  .dot-actualizacion{ background: #b45309; border-color: #fde68a !important; }
+
+  .tooltip {
+    position: absolute; background: rgba(8,15,35,0.97);
+    border: 1px solid #e94560; border-radius: 9px;
+    padding: 11px 13px; max-width: 270px; min-width: 190px;
+    z-index: 100; pointer-events: none;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.8); display: none;
+  }
+  .tooltip.visible { display: block; }
+  .tooltip h3 { color: #fff; font-size: 12px; font-weight: 700; margin-bottom: 3px; line-height: 1.3; }
+  .tooltip .t-city { color: #7ab8f5; font-size: 10px; font-weight: 600; margin-bottom: 5px; }
+  .tooltip .t-row { display: flex; gap: 5px; margin-bottom: 3px; font-size: 11px; }
+  .tooltip .t-label { color: #7ab8f5; font-weight: 600; min-width: 55px; flex-shrink: 0; }
+  .tooltip .t-value { color: #eee; flex: 1; line-height: 1.3; }
+
+  .detail-panel {
+    position: absolute; top: 0; right: 0; width: 340px; height: 100%;
+    background: rgba(8,15,35,0.97); border-left: 2px solid #e94560;
+    transform: translateX(100%); transition: transform 0.3s;
+    z-index: 50; overflow-y: auto; padding: 18px 16px;
+  }
+  .detail-panel.open { transform: translateX(0); }
+  .detail-close {
+    position: absolute; top: 10px; right: 10px;
+    background: #e94560; color: #fff; border: none; border-radius: 50%;
+    width: 26px; height: 26px; font-size: 15px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .detail-city { color: #7ab8f5; font-size: 11px; font-weight: 700; text-transform: uppercase; margin-bottom: 3px; }
+  .detail-name { color: #fff; font-size: 15px; font-weight: 800; margin-bottom: 3px; line-height: 1.3; }
+  .detail-type { color: #aaa; font-size: 11px; margin-bottom: 10px; }
+  .detail-section { margin-bottom: 11px; }
+  .detail-section-title { color: #e94560; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px; }
+  .detail-section-body { color: #ddd; font-size: 11px; line-height: 1.5; }
+
+  .legend {
+    position: absolute; bottom: 14px; left: 14px;
+    background: rgba(8,15,35,0.93); border: 1px solid #0f3460;
+    border-radius: 8px; padding: 10px 13px; z-index: 30; max-width: 200px;
+  }
+  .legend h4 { color: #7ab8f5; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 7px; }
+  .legend-item { display: flex; align-items: center; gap: 7px; margin-bottom: 4px; font-size: 10px; color: #ccc; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.5); flex-shrink: 0; }
+  .legend-sep { border-top: 1px solid #0f3460; margin: 6px 0; }
+
+  .stats-bar {
+    position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+    background: rgba(8,15,35,0.93); border: 1px solid #0f3460;
+    border-radius: 20px; padding: 5px 14px; display: flex; gap: 12px;
+    z-index: 30; font-size: 10px; white-space: nowrap;
+  }
+  .stat-item { display: flex; align-items: center; gap: 4px; }
+  .stat-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .stat-label { color: #aaa; }
+  .stat-count { color: #fff; font-weight: 700; margin-left: 2px; }
+
+  .priority-card {
+    background: #1e2d50; border: 1px solid #0f3460; border-radius: 7px;
+    padding: 9px 11px; margin-bottom: 6px; cursor: pointer;
+    border-left: 4px solid #dc2626; transition: all 0.2s;
+  }
+  .priority-card.alta { border-left-color: #ea580c; }
+  .priority-card:hover { background: #253c6e; }
+  .priority-card.active { background: #253c6e; }
+  .priority-num { font-size: 18px; font-weight: 900; color: #e94560; float: left; margin-right: 8px; line-height: 1; }
+  .priority-accion { font-size: 12px; color: #eee; font-weight: 600; line-height: 1.3; }
+  .priority-meta { font-size: 10px; color: #aaa; margin-top: 5px; clear: both; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+  .priority-ciudad { color: #7ab8f5; font-weight: 600; }
+  .priority-tiempo { color: #fde68a; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>🗺️ República Democrática de Hotlandia — Daños a Infraestructura · Sismo M 7.8</h1>
+    <p>Fuentes: MD-5-2 al MD-6-14 · Última actualización: 18:00 hrs 30 de abril</p>
+  </div>
+  <span class="badge">MD 5-9</span>
+</header>
+
+<div class="layout">
+  <div class="sidebar">
+    <div class="sidebar-title">📋 Capas de información</div>
+    <div class="layer-tabs">
+      <button class="layer-tab active" onclick="switchLayer('edificios',this)">🏛️<br>Edificios</button>
+      <button class="layer-tab" onclick="switchLayer('vias',this)">🛣️<br>Vías</button>
+      <button class="layer-tab" onclick="switchLayer('servicios',this)">💧<br>Servicios</button>
+      <button class="layer-tab" onclick="switchLayer('prioridades',this)">⚠️<br>Prioridades</button>
+      <button class="layer-tab" onclick="switchLayer('actualizaciones',this)" style="border-left:2px solid #dc2626;">🆕<br>EF Nuevo</button>
+    </div>
+
+    <div class="layer-panel active" id="panel-edificios">
+      <div class="filter-row">
+        <button class="filter-btn active" onclick="filterItems('all','edificios',this)">Todos</button>
+        <button class="filter-btn" onclick="filterItems('salud','edificios',this)">🏥 Salud</button>
+        <button class="filter-btn" onclick="filterItems('publico','edificios',this)">🏛️ Públicos</button>
+        <button class="filter-btn" onclick="filterItems('colapsado','edificios',this)">🔴 Colapsados</button>
+      </div>
+      <div class="item-list" id="list-edificios"></div>
+    </div>
+
+    <div class="layer-panel" id="panel-vias">
+      <div class="filter-row">
+        <button class="filter-btn active" onclick="filterItems('all','vias',this)">Todos</button>
+        <button class="filter-btn" onclick="filterItems('vía','vias',this)">🛣️ Vías</button>
+        <button class="filter-btn" onclick="filterItems('aeropuerto','vias',this)">✈️ Aero</button>
+        <button class="filter-btn" onclick="filterItems('puerto','vias',this)">⚓ Puertos</button>
+      </div>
+      <div class="item-list" id="list-vias"></div>
+    </div>
+
+    <div class="layer-panel" id="panel-servicios">
+      <div class="filter-row">
+        <button class="filter-btn active" onclick="filterItems('all','servicios',this)">Todos</button>
+        <button class="filter-btn" onclick="filterItems('agua','servicios',this)">💧 Agua</button>
+        <button class="filter-btn" onclick="filterItems('electricidad','servicios',this)">⚡ Energía</button>
+        <button class="filter-btn" onclick="filterItems('telecom','servicios',this)">📡 Telecom</button>
+      </div>
+      <div class="item-list" id="list-servicios"></div>
+    </div>
+
+    <div class="layer-panel" id="panel-prioridades">
+      <div class="filter-row">
+        <button class="filter-btn active" onclick="filterItems('all','prioridades',this)">Todas</button>
+        <button class="filter-btn" onclick="filterItems('1 — CRÍTICA','prioridades',this)">🔴 Críticas</button>
+        <button class="filter-btn" onclick="filterItems('2 — ALTA','prioridades',this)">🟠 Altas</button>
+      </div>
+      <div class="item-list" id="list-prioridades"></div>
+    </div>
+
+    <div class="layer-panel" id="panel-actualizaciones">
+      <div class="filter-row" style="background:#1a0a0a;">
+        <button class="filter-btn active" onclick="filterItems('all','actualizaciones',this)" style="border-color:#dc2626;">Todos</button>
+        <button class="filter-btn" onclick="filterItems('nueva','actualizaciones',this)" style="border-color:#16a34a;">🆕 Nuevas</button>
+        <button class="filter-btn" onclick="filterItems('actualizacion','actualizaciones',this)" style="border-color:#d97706;">🔄 Actualiz.</button>
+      </div>
+      <div class="item-list" id="list-actualizaciones"></div>
+    </div>
+  </div>
+
+  <div class="map-container">
+    <div class="map-wrapper" id="map-wrapper">
+      <img id="map-image" src="mapa_base.jpg" alt="Mapa Hotlandia" onload="init()">
+      <div id="markers-layer"></div>
+      <div class="tooltip" id="tooltip"></div>
+      <div class="legend">
+        <h4>Estado</h4>
+        <div class="legend-item"><div class="legend-dot" style="background:#dc2626"></div>Colapsado / Bloqueado</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#ea580c"></div>Dañado / En riesgo</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#d97706"></div>Saturado / Comprometido</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#16a34a"></div>Operativo con daños</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#7c3aed"></div>Bloqueado / Suspendido</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#4b5563"></div>Desconocido</div>
+        <div class="legend-sep"></div>
+        <div class="legend-item" style="font-size:11px;">🏥 Salud · 🏛️ Edificio</div>
+        <div class="legend-item" style="font-size:11px;">🛣️ Vía · ✈️ Aero · ⚓ Puerto</div>
+        <div class="legend-item" style="font-size:11px;">💧 Agua · ⚡ Energía · 📡 Telecom</div>
+        <div class="legend-item" style="font-size:11px;">⚠️ Prioridad de acción</div>
+        <div class="legend-sep"></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#15803d;border-color:#86efac"></div>🆕 Ciudad nueva (EF)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#b45309;border-color:#fde68a"></div>🔄 Ciudad actualizada (EF)</div>
+      </div>
+      <div class="stats-bar" id="stats-bar"></div>
+    </div>
+    <div class="detail-panel" id="detail-panel">
+      <button class="detail-close" onclick="closeDetail()">×</button>
+      <div id="detail-content"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+function gridToPercent(gx, gy) {
+  return { px: 5.5 + (gx / 50) * 88, py: 11 + (gy / 70) * 86 };
+}
+
+const dataEdificios = [
+  {id:'e1',categoria:'salud',ciudad:'Alejandría',nombre:'Centro de Salud + Clínica Móvil',estadoEstructural:'SATURADO / SERVICIO COLAPSADO',estadoOperativo:'COLAPSADO OPERATIVAMENTE. Director pidió que NO lleven más víctimas. Medicamentos agotados. Solo clínica móvil funciona.',capacidad:'60 camas · 10 méd. gral. · 4 internistas · 15 enf. + 20 aux.',atendidos:'37 menores Esc. El Níspero + 72 Gabrielito Sincuya + 33 adultos accidentes tráfico + otros.',necesidades:'Apoyo médico externo urgente · Medicamentos básicos · Combustible generadores · Sistema MCI · Relevo personal.',fuente:'MD-5-12 · MD-6-2 · MD-6-8',statusClass:'colapsado',icon:'🏥',cx:20,cy:10},
+  {id:'e2',categoria:'salud',ciudad:'Tosteno',nombre:'Hospital General + Hospital Pediátrico',estadoEstructural:'OPERATIVO CON DAÑOS MENORES',estadoOperativo:'SATURADO Y PERSONAL EXHAUSTO. Algunos médicos enviados a descansar. Capacidad reducida.',capacidad:'100 camas 3er nivel · 65 pediátrico · 90 nivel 2 · 5 ambulancias.',atendidos:'123 adultos masc. + 56 fem. + 11 niños + 7 adultas mayores + 12 embarazadas + 12 fallecidos = 223+.',necesidades:'Relevo personal médico URGENTE · Agua para cisterna · Insumos adicionales · Refuerzo enfermería.',fuente:'MD-5-13 · MD-6-4 · MD-6-11',statusClass:'saturado',icon:'🏥',cx:17,cy:46},
+  {id:'e3',categoria:'salud',ciudad:'San Pedro del Río',nombre:'Dispensario Médico',estadoEstructural:'COLAPSADO ESTRUCTURALMENTE',estadoOperativo:'Director ordenó NO recibir más pacientes. Riesgo de derrumbe. Atención trasladada a finca cercana.',capacidad:'20 camas · 5 médicos · 10 enf. · 1 quirófano.',atendidos:'235 B.Centro + 170 B.San Judas + 115 B.La Chiche + otros.',necesidades:'Módulo médico de campaña · Personal adicional · Ambulancia · Evacuación (4 hrs).',fuente:'MD-5-14 · MD-6-3 · MD-6-9 · MD-6-10',statusClass:'colapsado',icon:'🏥',cx:27,cy:31},
+  {id:'e4',categoria:'salud',ciudad:'Analquito',nombre:'Hospital Local',estadoEstructural:'URGENCIAS INHABILITADAS',estadoOperativo:'Autoridades SUSPENDIERON atenciones hasta evacuar urgencias dañadas. CACH instalado como alternativa.',capacidad:'46 camas · 7 cirujanos · 4 pediatras · 16 enf. + 20 aux. · 5 ambulancias.',atendidos:'2 cadáveres recuperados en bancos. 6 personas rescatadas banco local.',necesidades:'Evaluación estructural · Activación CACH · Transporte para traslados · Personal adicional.',fuente:'MD-6-7 · MD-6-14',statusClass:'danado',icon:'🏥',cx:21,cy:47},
+  {id:'e5',categoria:'salud',ciudad:'Chanmico',nombre:'Hospital Local (pequeño)',estadoEstructural:'OPERATIVO ABARROTADO',estadoOperativo:'ABARROTADO. 1 médico desaparecido, 4 enf. auxiliares desaparecidas. 933 personas atendidas.',capacidad:'35 camas · 3 cirujanos · 1 pediatra · 4 méd. gral. · 1 ambulancia (baja).',atendidos:'339 lesionados + 30 fallecidos + 35 soterrados. 933 lesionados atendidos + 12 fallecidos en hospital.',necesidades:'Médicos adicionales URGENTES · Insumos · Acceso vía aérea · Hospital de campaña.',fuente:'MD-5-15 · MD-6-6 · MD-6-13',statusClass:'saturado',icon:'🏥',cx:18,cy:60},
+  {id:'e6',categoria:'salud',ciudad:'El Malestar',nombre:'Establecimiento de Salud (desconocido)',estadoEstructural:'DESCONOCIDO',estadoOperativo:'Sin contacto. Condición completamente desconocida.',capacidad:'Sin datos de capacidad previa.',atendidos:'Desconocida.',necesidades:'Misión de reconocimiento URGENTE.',fuente:'Sin fuente',statusClass:'desconocido',icon:'🏥',cx:22,cy:38},
+  {id:'e7',categoria:'publico',ciudad:'Tosteno',nombre:'Edificio Correos (Oficina Postal)',estado:'COLAPSADO TOTALMENTE',descripcion:'Techo desplomado. 2 alas con paredes colapsadas. ~150 personas adentro. Rescate con 65+ atrapados.',impacto:'Operaciones postales suspendidas. Patrimonio cultural comprometido.',fuente:'MD-5-13 · MD-6-4 · MD-6-11',statusClass:'colapsado',icon:'🏛️',cx:16,cy:45},
+  {id:'e8',categoria:'publico',ciudad:'Alejandría',nombre:'Edificio Correos (Daños)',estado:'DAÑADO',descripcion:'Daños estructurales pero no colapsó totalmente. Sin personas atrapadas reportadas.',impacto:'Operaciones postales suspendidas.',fuente:'MD-6-2',statusClass:'danado',icon:'🏛️',cx:21,cy:11},
+  {id:'e9',categoria:'publico',ciudad:'San Pedro del Río',nombre:'Alcaldía Municipal',estado:'COLAPSADO TOTALMENTE',descripcion:'El edificio de la alcaldía colapsó. El alcalde y su secretario fallecieron o desaparecidos.',impacto:'Vacío de autoridad local. Fondos de emergencia inaccesibles (banco también colapsó).',fuente:'MD-5-14 · MD-6-3',statusClass:'colapsado',icon:'🏛️',cx:28,cy:32},
+  {id:'e10',categoria:'publico',ciudad:'Alejandría',nombre:'Edificio del Padrón (Registro Civil)',estado:'DAÑADO SEVERAMENTE',descripcion:'«A punto de colapsar — nivel 1 desplomado, nivel 2 a punto de derrumbarse». 145 personas sin poder evacuar.',impacto:'Servicio de registro civil suspendido. 145 personas en riesgo.',fuente:'MD-6-2 · MD-6-8',statusClass:'danado',icon:'🏛️',cx:19,cy:12},
+  {id:'e11',categoria:'publico',ciudad:'Alejandría',nombre:'Escuela El Níspero',estado:'COLAPSADA CASI TOTALMENTE',descripcion:'37 menores evacuados con traumas graves. 230 niños presentes en 6 grados. Búsqueda activa.',impacto:'Centro educativo destruido. Alta mortalidad infantil esperada.',fuente:'MD-6-2 · MD-6-8',statusClass:'colapsado',icon:'🏛️',cx:20,cy:13},
+  {id:'e12',categoria:'publico',ciudad:'Alejandría',nombre:'Escuela Gabrielito Sincuya',estado:'COLAPSADA CASI TOTALMENTE',descripcion:'72 niños (7–12 años) rescatados con lesiones. 4 maestros desaparecidos. 3 párvulos aparentemente fallecidos.',impacto:'Centro educativo destruido. Alta mortalidad. Búsqueda activa.',fuente:'MD-6-2 · MD-6-8',statusClass:'colapsado',icon:'🏛️',cx:22,cy:12},
+  {id:'e13',categoria:'publico',ciudad:'Analquito',nombre:'Delegación Policial',estado:'PARCIALMENTE COLAPSADA',descripcion:'Una pared de la estación colapsó. 3 agentes sepultados. 6 reos: 4 se fugaron con 3 escopetas.',impacto:'4 prófugos armados. Capacidad policial reducida. Asaltos reportados.',fuente:'MD-6-7 · MD-6-14',statusClass:'danado',icon:'🏛️',cx:22,cy:48},
+  {id:'e14',categoria:'publico',ciudad:'Analquito',nombre:'Bancos locales y comerciales',estado:'DAÑOS SERIOS / PARCIAL COLAPSO',descripcion:'Banco local y banco comercial con serios daños. 6 rescatados banco local, 7 banco comercial.',impacto:'Servicios bancarios suspendidos. Operaciones de rescate activas.',fuente:'MD-6-7 · MD-6-14',statusClass:'danado',icon:'🏛️',cx:20,cy:49},
+  {id:'e15',categoria:'publico',ciudad:'Chanmico',nombre:'Banco local (patrimonio cultural)',estado:'COLAPSADO 2 PLANTAS',descripcion:'Edificio bancario antiguo de 2 plantas, patrimonio cultural. 35 soterrados. 4 personas rescatadas (1 falleció).',impacto:'Servicios suspendidos. Rescate activo. Patrimonio cultural comprometido.',fuente:'MD-6-6 · MD-6-13',statusClass:'colapsado',icon:'🏛️',cx:19,cy:61},
+  {id:'e16',categoria:'publico',ciudad:'Analquito',nombre:'Compañía Eléctrica',estado:'DAÑOS SERIOS',descripcion:'Serios daños estructurales en el edificio. Empresa sin capacidad operativa.',impacto:'Reparación red eléctrica impedida por daños propios.',fuente:'MD-6-7',statusClass:'danado',icon:'🏛️',cx:23,cy:47},
+  {id:'e17',categoria:'publico',ciudad:'Santa Cruz / Tosteno',nombre:'Aeropuerto (cabecera norte)',estado:'PARCIALMENTE DAÑADO',descripcion:'Cabecera norte pista 156 con daños. Sin energía = sin iluminación. 1 generador disponible sin activar.',impacto:'Aeropuerto CERRADO. Acceso aéreo a región oeste comprometido. Crítico para Chanmico aislada.',fuente:'MD-6-5 · MD-6-11',statusClass:'danado',icon:'✈️',cx:10,cy:40},
+];
+
+const dataVias = [
+  {id:'v1',categoria:'vía',ciudad:'Tosteno / Chanmico',nombre:'Carretera principal Tosteno → Chanmico',estado:'BLOQUEADA (PARCIAL)',descripcion:'Deslizamientos del Cerro El Temblón en múltiples puntos. Lluvia torrencial activa agrava situación. Socavamientos en formación.',impacto:'Obstrucción activa. Maquinaria pesada para remoción disponible 6 km de Tosteno.',fuente:'MD-6-11 · MD-6-13',statusClass:'bloqueado',icon:'🛣️',cx:16,cy:52},
+  {id:'v2',categoria:'vía',ciudad:'Chanmico',nombre:'Carretera acceso a Chanmico',estado:'BLOQUEADA (TOTAL)',descripcion:'Cerro El Temblón II — deslizamientos masivos. Inmensas cantidades de tierra y roca. Ciudad potencialmente aislada.',impacto:'Maquinaria pesada urgente. Sin personal ni maquinaria actualmente. Helicópteros como alternativa inmediata.',fuente:'MD-6-13',statusClass:'colapsado',icon:'🛣️',cx:17,cy:57},
+  {id:'v3',categoria:'vía',ciudad:'San Pedro del Río',nombre:'Carretera Cordillera Norte (Km 102)',estado:'BLOQUEADA (PARCIAL)',descripcion:'Autobús de transporte público soterrado en Km 102. Grupo de búsqueda enviado (1 policía + 5 voluntarios) pero sin medios.',impacto:'Remoción del autobús urgente. Rescate de víctimas. Requiere medios especializados.',fuente:'MD-6-9 · MD-6-3',statusClass:'bloqueado',icon:'🛣️',cx:27,cy:22},
+  {id:'v4',categoria:'vía',ciudad:'Analquito',nombre:'Carretera región central — Analquito',estado:'EN RIESGO',descripcion:'Postes del tendido eléctrico caídos con transformadores derramando aceite. Estaciones repetidoras caídas afectan comunicaciones.',impacto:'Inspección vial urgente. Remoción de postes y contención de aceite.',fuente:'MD-6-7 · MD-6-14',statusClass:'comprometido',icon:'🛣️',cx:22,cy:44},
+  {id:'v5',categoria:'vía',ciudad:'Tosteno',nombre:'Carretera Tosteno → Capital',estado:'COMPROMETIDA',descripcion:'Lluvia torrencial activa. Deslizamientos del Cerro El Temblón obstruyen tramo hacia Chanmico. Riesgo de más deslizamientos.',impacto:'Vigilancia y cierre preventivo. Informes meteorológicos urgentes.',fuente:'MD-6-11',statusClass:'comprometido',icon:'🛣️',cx:15,cy:48},
+  {id:'v6',categoria:'vía',ciudad:'Alejandría',nombre:'Carretera Alejandría → Capital',estado:'CONDICIÓN DESCONOCIDA',descripcion:'Sin reportes específicos. Ciudad sin energía ni comunicaciones. Posible obstrucción dado el contexto sísmico y lluvia.',impacto:'Verificación de estado vial urgente. Establecer comunicación con capital.',fuente:'MD-6-8',statusClass:'desconocido',icon:'🛣️',cx:20,cy:14},
+  {id:'v7',categoria:'vía',ciudad:'El Malestar',nombre:'Vía acceso El Malestar',estado:'DESCONOCIDA',descripcion:'Sin contacto con la ciudad desde las 08:30 hrs del 29 de abril. Estado de todas las vías de acceso desconocido.',impacto:'Misión de reconocimiento URGENTE.',fuente:'Sin fuente',statusClass:'desconocido',icon:'🛣️',cx:22,cy:37},
+  {id:'v8',categoria:'aeropuerto',ciudad:'Santa Cruz / Tosteno',nombre:'Aeropuerto regional Santa Cruz / Tosteno',estado:'CERRADO TEMPORALMENTE',descripcion:'Cabecera norte (pista 156) con daños. Sin energía = sin iluminación de pista. 1 generador de emergencia disponible pero sin activar.',impacto:'Acceso aéreo a región oeste COMPROMETIDO. Chanmico depende de este aeropuerto para ayuda humanitaria.',fuente:'MD-6-5 · MD-6-11',statusClass:'bloqueado',icon:'✈️',cx:10,cy:40},
+  {id:'v9',categoria:'aeropuerto',ciudad:'Capital',nombre:'Aeropuerto de la Capital',estado:'OPERATIVO (presumiblemente)',descripcion:'Sin reportes de daños. La capital no fue incluida en los reportes de afectación.',impacto:'Principal puerta de entrada para ayuda internacional. Ruta aérea a Santa Cruz comprometida.',fuente:'MD-5-2/5-8',statusClass:'operativo',icon:'✈️',cx:37,cy:53},
+  {id:'v10',categoria:'puerto',ciudad:'Puerto del Muerto',nombre:'Puerto del Muerto (Principal)',estado:'SIN DATOS',descripcion:'No hay reportes de daños. Ciudad no incluida en área afectada directamente.',impacto:'CLAVE: almacena el 60% del petróleo del país. Disrupciones afectarían generadores de toda la región.',fuente:'MD-5-2/5-8',statusClass:'desconocido',icon:'⚓',cx:44,cy:14},
+  {id:'v11',categoria:'puerto',ciudad:'Puerto Marañón',nombre:'Puerto Marañón',estado:'SIN DATOS',descripcion:'No hay reportes específicos. Puerto menor de pesca.',impacto:'Impacto operacional mínimo esperado.',fuente:'MD-5-2/5-8',statusClass:'desconocido',icon:'⚓',cx:33,cy:66},
+  {id:'v12',categoria:'puerto',ciudad:'Puerto del Vivo',nombre:'Puerto del Vivo',estado:'SIN DATOS',descripcion:'No hay reportes específicos. Puerto menor de pesca.',impacto:'Impacto operacional mínimo esperado.',fuente:'MD-5-2/5-8',statusClass:'desconocido',icon:'⚓',cx:5,cy:23},
+];
+
+const dataServicios = [
+  {id:'s1',categoria:'agua',ciudad:'Alejandría',nombre:'Agua potable — Alejandría',estado:'SUSPENDIDA TOTALMENTE',descripcion:'Múltiples tuberías rotas. Sistema depende de energía eléctrica (cortada). Reservas del centro de salud agotándose en horas.',riesgo:'CRÍTICO: Personas bebiendo agua de fugas (contaminación). Riesgo EDA. Hipotermia en niños.',afectados:'~6,800 hab. urb. + 2,500 sin refugio.',accion:'Tanqueros de agua URGENTES. Distribución de recipientes. Prioridad: centro de salud.',fuente:'MD-5-12 · MD-6-2 · MD-6-8',statusClass:'suspendido',icon:'💧',cx:20,cy:10},
+  {id:'s2',categoria:'agua',ciudad:'Tosteno',nombre:'Agua potable — Tosteno',estado:'SUSPENDIDA TOTALMENTE',descripcion:'Corte de energía interrumpió bombeo. Gran cantidad de fugas. Hospital usando cisterna con extracción manual (cubetas).',riesgo:'CRÍTICO: Cisterna hospitalaria al límite. Fosas en calles. Riesgo dengue post-lluvia.',afectados:'~10,000 hab. + 200 familias sin refugio.',accion:'Tanquero urgente al hospital. Cisternas de emergencia para población.',fuente:'MD-5-13 · MD-6-4 · MD-6-11',statusClass:'suspendido',icon:'💧',cx:17,cy:46},
+  {id:'s3',categoria:'agua',ciudad:'San Pedro del Río',nombre:'Agua potable — San Pedro del Río',estado:'SUSPENDIDA INDEFINIDAMENTE',descripcion:'Personas recolectan agua de fugas. Sin recipientes. Agua de tuberías rotas NO es segura (MD-6-9/10).',riesgo:'CRÍTICO: Agua de tuberías consumida por población. Riesgo EDA confirmado. Infecciones en heridos.',afectados:'~12,745 hab. + 850 familias sin vivienda.',accion:'Verificar tubería madre. Tanqueros. Difundir que agua de fugas NO es potable.',fuente:'MD-5-14 · MD-6-9 · MD-6-10',statusClass:'suspendido',icon:'💧',cx:27,cy:31},
+  {id:'s4',categoria:'agua',ciudad:'Analquito',nombre:'Agua potable — Analquito',estado:'PARCIALMENTE INTERRUMPIDA',descripcion:'Abastecimiento interrumpido en algunos barrios. Postes caídos derramaron aceite de transformadores contaminando suelo.',riesgo:'MODERADO: Barrios sin agua. Contaminación suelo por aceite. Riesgo freático.',afectados:'~18,000 hab. (algunos barrios sin servicio).',accion:'Identificar tuberías rotas. Contener aceite. Abastecimiento alternativo.',fuente:'MD-6-7 · MD-6-14',statusClass:'comprometido',icon:'💧',cx:22,cy:47},
+  {id:'s5',categoria:'agua',ciudad:'Chanmico',nombre:'Agua potable — Chanmico',estado:'SUSPENDIDA (PRESUNTA)',descripcion:'Dado el corte generalizado de energía y aislamiento, se presume suspensión. Diarrea esporádica reportada.',riesgo:'CRÍTICO: 700+ familias sin techo. Riesgo epidémico emergente.',afectados:'~11,000 hab. + 700 familias sin techo.',accion:'Suministro de agua de emergencia prioritario. Acceso bloqueado — envío vía aérea.',fuente:'MD-5-15 · MD-6-6 · MD-6-13',statusClass:'suspendido',icon:'💧',cx:18,cy:60},
+  {id:'s6',categoria:'agua',ciudad:'Santa Cruz',nombre:'Agua potable — Santa Cruz',estado:'COMPROMETIDA (presunta)',descripcion:'Fugas de agua y derrames por todas las calles. Personas bebiendo agua de tuberías rotas.',riesgo:'ALTO: EDA en adultos mayores. IRA en niños por humedad y frío.',afectados:'~1,200+ familias sin refugio (B.Centro) + otros barrios.',accion:'Distribución agua potable certificada. Restricción agua de fugas. Atención EDA e IRA.',fuente:'MD-6-5 · MD-6-12',statusClass:'comprometido',icon:'💧',cx:10,cy:38},
+  {id:'s7',categoria:'electricidad',ciudad:'Alejandría',nombre:'Energía eléctrica — Alejandría',estado:'CORTADA TOTALMENTE',descripcion:'Múltiples líneas de transmisión caídas. Semáforos apagados. Generadores privados activos pero combustible agotándose en horas.',riesgo:'Clínica móvil sin energía inminente. Bombas de agua sin funcionar. Comunicaciones fallidas.',accion:'Combustible diesel urgente para generadores médicos.',fuente:'MD-5-12 · MD-6-2 · MD-6-8',statusClass:'suspendido',icon:'⚡',cx:21,cy:11},
+  {id:'s8',categoria:'electricidad',ciudad:'Tosteno',nombre:'Energía eléctrica — Tosteno',estado:'CORTADA TOTALMENTE',descripcion:'Corte generalizado post-sismo. Hospital extrae agua de cisterna con cubetas por falta de bomba. Saqueos en oscuridad facilitados.',riesgo:'Hospital funcionando sin energía. Riesgo dengue post-lluvia.',accion:'1 generador en aeropuerto disponible. Activar urgente.',fuente:'MD-5-13 · MD-6-4 · MD-6-11',statusClass:'suspendido',icon:'⚡',cx:16,cy:47},
+  {id:'s9',categoria:'electricidad',ciudad:'San Pedro del Río',nombre:'Energía eléctrica — San Pedro del Río',estado:'SUSPENDIDA INDEFINIDAMENTE',descripcion:'Suspensión confirmada. Sin generadores reportados. Oscuridad total dificulta rescate nocturno.',riesgo:'Dispensario médico sin energía. Bomba de agua no funciona.',accion:'Generadores de emergencia urgentes.',fuente:'MD-5-14 · MD-6-3 · MD-6-9',statusClass:'suspendido',icon:'⚡',cx:28,cy:30},
+  {id:'s10',categoria:'electricidad',ciudad:'Analquito',nombre:'Energía eléctrica — Analquito',estado:'SUSPENDIDA EN TODA LA CIUDAD',descripcion:'Postes caídos con transformadores derramando aceite. Estaciones repetidoras en Cerro Temblón I fuera de servicio.',riesgo:'Riesgo electrocución por postes caídos. Aceite de transformadores: riesgo ambiental e incendio.',accion:'Electricistas especializados. Contención aceite. Señalización de peligro.',fuente:'MD-6-7 · MD-6-14',statusClass:'suspendido',icon:'⚡',cx:23,cy:48},
+  {id:'s11',categoria:'electricidad',ciudad:'Chanmico',nombre:'Energía eléctrica — Chanmico',estado:'SUSPENDIDA (presunta)',descripcion:'Dado el aislamiento total, se presume corte eléctrico. Se solicitaron 10 generadores 5KW diesel (actualmente: 0).',riesgo:'Hospital sin energía. Albergue sin iluminación. Ciudad aislada de noche.',accion:'10 generadores 5KW diesel urgentes.',fuente:'MD-5-15 · MD-6-6 · MD-6-13',statusClass:'suspendido',icon:'⚡',cx:19,cy:61},
+  {id:'s12',categoria:'electricidad',ciudad:'Santa Cruz',nombre:'Energía eléctrica — Santa Cruz',estado:'CORTADA TOTALMENTE',descripcion:'Cables de alta tensión energizados caídos en calles (La Merced, centro ciudad). Aeropuerto sin iluminación de pista.',riesgo:'Cables energizados = riesgo de muerte por electrocución. IRA en niños por frío.',accion:'Neutralización cables URGENTE. Electricistas especializados.',fuente:'MD-6-5 · MD-6-12',statusClass:'suspendido',icon:'⚡',cx:11,cy:39},
+  {id:'s13',categoria:'telecom',ciudad:'Analquito',nombre:'Repetidoras Cerro El Temblón I',estado:'CAÍDAS / FUERA DE SERVICIO',descripcion:'Deslizamientos causaron la caída de estaciones repetidoras. Sirven a toda la región central.',riesgo:'Analquito sin comunicaciones. Posible efecto en cascada para otras ciudades dependientes.',accion:'Técnicos de telecomunicaciones urgentes. Estaciones portátiles de emergencia.',fuente:'MD-6-7',statusClass:'colapsado',icon:'📡',cx:24,cy:49},
+  {id:'s14',categoria:'telecom',ciudad:'Chanmico',nombre:'Repetidoras Cerro El Temblón II',estado:'EN RIESGO CRÍTICO',descripcion:'Deslizamientos activos en Cerro El Temblón II. Estaciones que sirven a toda la región sur y posiblemente al país en riesgo.',riesgo:'Si caen: pérdida de comunicaciones en toda la región sur y posiblemente NACIONAL.',accion:'Evaluación urgente. Reforzamiento o evacuación de equipos.',fuente:'MD-6-6 · MD-6-13',statusClass:'comprometido',icon:'📡',cx:19,cy:62},
+  {id:'s15',categoria:'telecom',ciudad:'Alejandría',nombre:'Comunicaciones locales — Alejandría',estado:'FUERA DE SERVICIO',descripcion:'Al momento del sismo teléfonos y radio no funcionaban. Sin energía eléctrica. Los 20 policías de licencia no pudieron reportarse.',riesgo:'Coordinación de emergencia imposible localmente.',accion:'Radio de emergencia + generadores urgentes.',fuente:'MD-5-12 · MD-6-2',statusClass:'colapsado',icon:'📡',cx:22,cy:12},
+  {id:'s16',categoria:'telecom',ciudad:'El Malestar',nombre:'Comunicaciones — El Malestar',estado:'SIN DATOS / TOTAL',descripcion:'Sin contacto desde las 08:30 hrs del 29 de abril. Combinación de daños en telecom + sin energía.',riesgo:'Brecha de información más grave del COE. Imposible planificar respuesta.',accion:'Misión de reconocimiento inmediata.',fuente:'MD-5-15',statusClass:'desconocido',icon:'📡',cx:23,cy:38},
+];
+
+const dataPrioridades = [
+  {id:'p1',num:1,ciudad:'Chanmico',accion:'Apertura vía terrestre a Chanmico (Cerro Temblón II)',sector:'Vías terrestres',descripcion:'Ciudad AISLADA con 30 fallecidos, 339 lesionados, 35 soterrados y 700 familias sin techo. Sin maquinaria ni personal para despejar.',recurso:'Maquinaria pesada (Cmd. Ing. Militar disponible en Tosteno a 6 km). Operarios. Evaluación geotécnica.',nivel:'1 — CRÍTICA',tiempo:'INMEDIATO (máx. 6 hrs)',fuente:'MD-6-13 · MD-6-6',statusClass:'critica',icon:'⚠️',cx:17,cy:58},
+  {id:'p2',num:2,ciudad:'Tosteno → Chanmico',accion:'Activar Comando de Ingeniería Militar',sector:'Vías + Rescate',descripcion:'Cmd. Ingeniería Militar a 6 km de Tosteno con equipo pesado AÚN NO ACTIVADO (MD-5-6). Sirve para apertura de vías y remoción de escombros.',recurso:'Autorización de activación. Coordinación COE con Ministerio de Defensa.',nivel:'1 — CRÍTICA',tiempo:'INMEDIATO',fuente:'MD-5-5/6 · MD-6-13',statusClass:'critica',icon:'⚠️',cx:16,cy:50},
+  {id:'p3',num:3,ciudad:'Santa Cruz',accion:'Activar aeropuerto Santa Cruz con generador de emergencia',sector:'Aeropuerto',descripcion:'1 generador de emergencia disponible en el aeropuerto pero no activado. Única vía de acceso a Chanmico aislada mientras se abre la vía terrestre.',recurso:'Generador ya disponible en sitio. Técnico aeroportuario. Evaluación estructural pista.',nivel:'1 — CRÍTICA',tiempo:'INMEDIATO',fuente:'MD-6-5 · MD-6-11',statusClass:'critica',icon:'⚠️',cx:11,cy:42},
+  {id:'p4',num:4,ciudad:'Tosteno + Alejandría',accion:'Suministro de agua potable urgente a hospitales',sector:'Agua potable',descripcion:'Hospital Tosteno extrae agua con cubetas (agotamiento inminente). Centro salud Alejandría sin agua y generadores próximos a apagarse.',recurso:'Tanquero de agua URGENTE a cada hospital. Cisternas de emergencia.',nivel:'1 — CRÍTICA',tiempo:'INMEDIATO (máx. 2 hrs)',fuente:'MD-6-4 · MD-6-8',statusClass:'critica',icon:'⚠️',cx:18,cy:44},
+  {id:'p5',num:5,ciudad:'Alejandría',accion:'Suministro combustible generadores médicos',sector:'Energía eléctrica',descripcion:'Generador del centro de salud de Alejandría se apagará en pocas horas. Sin energía no hay atención médica ni cirugías.',recurso:'Combustible diesel urgente para generadores médicos.',nivel:'1 — CRÍTICA',tiempo:'INMEDIATO (máx. 2 hrs)',fuente:'MD-6-8',statusClass:'critica',icon:'⚠️',cx:21,cy:13},
+  {id:'p6',num:6,ciudad:'Santa Cruz',accion:'Neutralizar cables eléctricos energizados en calles',sector:'Energía eléctrica',descripcion:'La Merced y centro ciudad con cables de alta tensión en calles y suelo. Riesgo de electrocución para rescatistas y población activo.',recurso:'Electricistas especializados. Corte de suministro eléctrico en sectores afectados.',nivel:'1 — CRÍTICA',tiempo:'INMEDIATO',fuente:'MD-6-5 · MD-6-12',statusClass:'critica',icon:'⚠️',cx:10,cy:37},
+  {id:'p7',num:7,ciudad:'Analquito + Chanmico + El Malestar',accion:'Reestablecer comunicaciones (estaciones repetidoras)',sector:'Telecomunicaciones',descripcion:'Estaciones Cerro Temblón I caídas (Analquito sin comunicación). Temblón II en riesgo (Chanmico). Sin comunicaciones el COE opera a ciegas.',recurso:'Técnicos telecomunicaciones. Generadores para estaciones. Estaciones portátiles de emergencia.',nivel:'1 — CRÍTICA',tiempo:'PRIMERAS 6 HRS',fuente:'MD-6-7 · MD-6-13',statusClass:'critica',icon:'⚠️',cx:22,cy:45},
+  {id:'p8',num:8,ciudad:'El Malestar',accion:'Misión de reconocimiento a El Malestar',sector:'Vías + Telecomunicaciones',descripcion:'+13 horas sin contacto. Ciudad en zona epicentro. Sin datos de víctimas, infraestructura ni recursos.',recurso:'Vehículo todoterreno + radio + 1 médico + primeros auxilios.',nivel:'1 — CRÍTICA',tiempo:'INMEDIATO',fuente:'MD-5-15',statusClass:'critica',icon:'⚠️',cx:22,cy:36},
+  {id:'p9',num:9,ciudad:'San Pedro del Río',accion:'Remoción autobús soterrado Km 102 cordillera norte',sector:'Vías + Rescate',descripcion:'Autobús con pasajeros soterrado en Km 102. Grupo de búsqueda enviado (1 policía + 5 voluntarios) sin medios.',recurso:'Maquinaria y medios de rescate. Ambulancia para víctimas.',nivel:'1 — CRÍTICA',tiempo:'PRIMERAS 6 HRS',fuente:'MD-6-9 · MD-6-10',statusClass:'critica',icon:'⚠️',cx:27,cy:24},
+  {id:'p10',num:10,ciudad:'SPR · Tosteno · Chanmico · Alejandría · Santa Cruz',accion:'Distribución agua potable certificada a población',sector:'Agua potable',descripcion:'Población de 4+ ciudades sin agua. Bebiendo de tuberías rotas (EDA en adultos mayores). Sin recipientes. Riesgo epidémico emergente.',recurso:'Tanqueros. Cisternas portátiles. Recipientes de almacenamiento. Potabilizadores de emergencia.',nivel:'1 — CRÍTICA',tiempo:'PRIMERAS 12 HRS',fuente:'Múltiples',statusClass:'critica',icon:'⚠️',cx:19,cy:53},
+  {id:'p11',num:11,ciudad:'Analquito',accion:'Evaluación estructural y reapertura urgencias Hospital Analquito',sector:'Salud + Edificios',descripcion:'Hospital suspendió atenciones por daños en urgencias. Con 2,700–3,575 personas desplazadas, Analquito debe recuperar capacidad.',recurso:'Ingenieros estructurales. Equipo de construcción menor.',nivel:'2 — ALTA',tiempo:'PRIMERAS 12 HRS',fuente:'MD-6-7 · MD-6-14',statusClass:'alta',icon:'⚠️',cx:23,cy:50},
+  {id:'p12',num:12,ciudad:'Santa Cruz',accion:'Reparación y evaluación aeropuerto (cabecera norte)',sector:'Aeropuerto',descripcion:'Daños en cabecera norte pista 156. Evaluación completa antes de reabrir. Clave para operaciones humanitarias.',recurso:'Ingenieros aeroportuarios. Equipo técnico de aproximación.',nivel:'2 — ALTA',tiempo:'PRIMERAS 24 HRS',fuente:'MD-6-5 · MD-6-11',statusClass:'alta',icon:'⚠️',cx:12,cy:41},
+  {id:'p13',num:13,ciudad:'Analquito · Santa Cruz · Tosteno',accion:'Inspección y reparación red eléctrica urbana',sector:'Energía eléctrica',descripcion:'Postes caídos, transformadores con aceite derramado (Analquito), cables energizados (Santa Cruz). Reparación en orden de prioridad.',recurso:'Cuadrillas técnicas eléctricas. Equipo especializado. Materiales de reposición.',nivel:'2 — ALTA',tiempo:'PRIMERAS 24 HRS',fuente:'MD-6-7 · MD-6-5',statusClass:'alta',icon:'⚠️',cx:15,cy:43},
+  {id:'p14',num:14,ciudad:'Puerto del Muerto',accion:'Verificar estado Puerto del Muerto y reservas de combustible',sector:'Puertos + Energía',descripcion:'El Puerto del Muerto almacena el 60% del petróleo del país. Disrupciones afectarían suministro de combustible para generadores de toda la región.',recurso:'Inspección portuaria urgente. Reporte de inventario de combustible.',nivel:'2 — ALTA',tiempo:'PRIMERAS 24 HRS',fuente:'MD-5-2/5-8',statusClass:'alta',icon:'⚠️',cx:44,cy:15},
+];
+
+// ═══════════════════════════════════════════════════════════════
+// LAYER 5 — ACTUALIZACIONES EF-1-4/1-15 (nuevo sismo secundario)
+// Ciudades nuevas + actualizaciones de ciudades existentes
+// ═══════════════════════════════════════════════════════════════
+const dataActualizaciones = [
+  // ── CIUDADES NUEVAS ──────────────────────────────────────────
+  {id:'a1',categoria:'nueva',ciudad:'El Charco',nombre:'El Charco — Sismo secundario',
+   hora:'05:00 · 01 mayo',estado:'COLAPSADO / CAOS',
+   descripcion:'Nuevo sismo en madrugada. 300+ viviendas colapsadas (construcción adobe). Calles agrietadas, tuberías y alcantarillas rotas. Estación policía desplomada. Consulta externa de unidad de salud colapsada, equipo dañado.',
+   victimas:'3 policías fallecidos, 4 gravemente lesionados. Cientos de heridos y fallecidos atrapados. Médico y 2 enfermeras ilesas pero sin material médico.',
+   necesidades:'Equipos búsqueda y rescate. Material médico. Refuerzo policial. Maquinaria remoción escombros.',
+   fuente:'EF-1-4',statusClass:'colapsado',icon:'🆕',cx:16,cy:53},
+
+  {id:'a2',categoria:'nueva',ciudad:'Micoleón',nombre:'Micoleón — Sismo + Oleaje (Tsunami)',
+   hora:'06:30 · 01 mayo',estado:'CATÁSTROFE / INUNDACIÓN',
+   descripcion:'Fuerte oleaje arrasó viviendas cercanas a la playa. 45 viviendas desaparecidas completamente bajo las olas. Calles anegadas. Puerto El Vivo seriamente afectado (muelle e instalaciones pesca artesanal dañadas). Centro de salud colapsó parcialmente.',
+   victimas:'Habitantes de 45 viviendas presuntamente ahogados. 4 agentes policía portuaria desaparecidos. Fallecidos estimados como gran cantidad.',
+   necesidades:'Búsqueda y rescate marítimo urgente. Material médico. Apoyo policial. Equipos de bombeo.',
+   fuente:'EF-1-5',statusClass:'colapsado',icon:'🆕',cx:9,cy:27},
+
+  {id:'a3',categoria:'nueva',ciudad:'Montañitas',nombre:'Montañitas — Sismo secundario',
+   hora:'21:00 · 01 mayo',estado:'AISLADA / CAOS',
+   descripcion:'Ciudad completamente aislada por deslizamientos de material rocoso. 250 viviendas inhabitables. 2 grupos de turistas atrapados en bosques sin contacto. Registro civil colapsado (4 empleados desaparecidos, presumiblemente fallecidos). Estación policía con daños severos.',
+   victimas:'1500+ personas heridas con atención muy limitada. 4 reos escaparon. 6 agentes con lesiones severas. 4 empleados registro civil desaparecidos.',
+   necesidades:'Grupos búsqueda y rescate · Insumos albergues · Material médico trauma · Combustible · Tiendas campaña · Generadores · Ambulancias · Médicos · Bolsas para cadáveres.',
+   fuente:'EF-1-11',statusClass:'colapsado',icon:'🆕',cx:21,cy:68},
+
+  {id:'a4',categoria:'nueva',ciudad:'Pámpidos',nombre:'Pámpidos — Sismo secundario',
+   hora:'22:30 · 01 mayo',estado:'GRAVE / CAOS',
+   descripcion:'Mayoría de habitantes dormía al ocurrir el sismo. Turistas en bares lesionados por caída de techos. Iglesia La Merced (patrimonio nacional) seriamente dañada con INCENDIO ACTIVO en estructura de madera del altar. Sin suministro eléctrico. Agua potable irregular.',
+   victimas:'5 agentes policía fallecidos. Cientos de turistas a la intemperie sin agua ni alimentos desde la madrugada.',
+   necesidades:'Control incendio iglesia La Merced (URGENTE). Alimentos y agua para turistas. Refuerzo policial. Generadores.',
+   fuente:'EF-1-12',statusClass:'colapsado',icon:'🆕',cx:8,cy:46},
+
+  {id:'a5',categoria:'nueva',ciudad:'Bolívar',nombre:'Bolívar — Sismo + Oleaje (Tsunami)',
+   hora:'03:00 · 02 mayo',estado:'SIN COMUNICACIÓN',
+   descripcion:'880 víctimas provisionales. Varios cientos de desaparecidos. +10,000 sin hogar por grandes olas. El día anterior se celebraban las "Fiestas de Poseidón" (turistas nacionales e internacionales entre víctimas). Sin ninguna comunicación con la ciudad desde el evento.',
+   victimas:'880 víctimas (provisional). Cientos de desaparecidos. +10,000 sin hogar. Turistas internacionales entre víctimas.',
+   necesidades:'Misión de reconocimiento URGENTE. Equipos búsqueda y rescate marítimo. Comunicaciones de emergencia.',
+   fuente:'EF-1-15',statusClass:'desconocido',icon:'🆕',cx:8,cy:33},
+
+  // ── ACTUALIZACIONES CIUDADES EXISTENTES ──────────────────────
+  {id:'a6',categoria:'actualizacion',ciudad:'Tosteno',nombre:'Tosteno — Actualización sismo secundario',
+   hora:'09:00 · 01 mayo',estado:'GRAVEMENTE AGRAVADO',
+   descripcion:'B.El Centro: 250 viviendas más colapsadas, ~150 fallecidos, 300+ lesionados graves, 1200 sin hogar. B.La Merced: 50 viviendas adobe, ~50 fallecidos, ~200 lesionados. B.Las Cañas: 30 viviendas destruidas, 45 lesionados, niños con bajo nivel nutricional. B.La Bola: 10 fallecidos (6 adultos + 4 niños), 17 lesionados. Centro ciudad: postes energizados, fugas masivas, fosa en calle El Olmo. Rescate correos SUSPENDIDO. Lluvia continua. Nuevos deslizamientos Cerro El Temblón.',
+   victimas:'150+ nuevos fallecidos (El Centro). 50 nuevos fallecidos (La Merced). 10 nuevos fallecidos (La Bola). Muchos niños con IRA.',
+   necesidades:'Maquinaria remoción escombros · Neutralización cables energizados URGENTE · Tanqueros agua · Atención IRA niños.',
+   fuente:'EF-1-6',statusClass:'colapsado',icon:'🔄',cx:18,cy:46},
+
+  {id:'a7',categoria:'actualizacion',ciudad:'Alejandría',nombre:'Alejandría — Actualización sismo secundario',
+   hora:'11:30 · 01 mayo',estado:'SITUACIÓN CRÍTICA AGRAVADA',
+   descripcion:'Registro Civil: pocas paredes nivel 2 que quedaban colapsaron, 3 brigadistas sepultados. Escuela El Níspero: evacuaciones suspendidas, 15 menores adicionales evacuados. Gabrielito Sincuya: 34 menores adicionales (5 TCE, 17 traumatismos). Incendio bodega agroquímicos sin controlar: gases tóxicos, 35 viviendas evacuadas. Centro salud: no recibe más pacientes, material agotado. 1500 familias adicionales damnificadas. Temperatura 12°C.',
+   victimas:'3 brigadistas sepultados. 15 menores lesionados adicionales. 34 menores evacuados. 1500 familias adicionales sin vivienda. Niños con hipotermia e IRA.',
+   necesidades:'Control incendio agroquímicos URGENTE (gases tóxicos) · Albergues 1500 familias · Raciones agua y comida · Insumos médicos.',
+   fuente:'EF-1-7',statusClass:'colapsado',icon:'🔄',cx:21,cy:10},
+
+  {id:'a8',categoria:'actualizacion',ciudad:'San Pedro del Río',nombre:'San Pedro del Río — Actualización',
+   hora:'04:30 · 01 mayo',estado:'SITUACIÓN GRAVE',
+   descripcion:'B.El Centro: 53 nuevos evacuados, 23 fallecidos de los 235 anteriores (12 niños <5 años). El Talud: corregido a 40 viviendas sepultadas. 4 ancianos fallecidos recuperados, morgue temporal en casa comunitaria. CPC sin acuerdos, síndico no localizable. Desórdenes toda la noche, disparos, 2 instalaciones de alimentos saqueadas. Autobús "Estrella del Norte" confirmado soterrado en Km 102.',
+   victimas:'23 fallecidos de los 235 anteriores (12 niños <5 años). 40 viviendas sepultadas (El Talud). 2 guardias lesionados en saqueos.',
+   necesidades:'Maquinaria pesada Km 102 (urgente) · Restablecimiento orden público · Morgue con capacidad · Traslado pacientes a capital.',
+   fuente:'EF-1-8',statusClass:'colapsado',icon:'🔄',cx:28,cy:31},
+
+  {id:'a9',categoria:'actualizacion',ciudad:'Chanmico',nombre:'Chanmico — Actualización sismo secundario',
+   hora:'16:30 · 01 mayo',estado:'CATÁSTROFE AGRAVADA',
+   descripcion:'1500 nuevas personas damnificadas en 6 barrios. Accesos completamente bloqueados por nuevos deslizamientos. Rescate banco local SUSPENDIDO (nuevas áreas colapsadas). 4 rescatistas Cruz Roja/Bomberos ATRAPADOS en escombros. Toldos saturados, intentos de violencia. 2 médicos voluntarios abandonaron el hospital. 23 fallecidos adicionales.',
+   victimas:'23 fallecidos adicionales. 1200 nuevos pacientes. 4 rescatistas atrapados. 1500 nuevos damnificados.',
+   necesidades:'Búsqueda rescatistas atrapados URGENTE · Apertura vial CRÍTICA · Refuerzo médico · Albergues adicionales.',
+   fuente:'EF-1-9',statusClass:'colapsado',icon:'🔄',cx:19,cy:60},
+
+  {id:'a10',categoria:'actualizacion',ciudad:'Analquito',nombre:'Analquito — Actualización sismo secundario',
+   hora:'19:00 · 01 mayo',estado:'GRAVEMENTE AGRAVADO',
+   descripcion:'Rescate banco reanudado (lento). Antes del sismo: 18 rescatados adicionales (3 fallecidos, 5 TCE, 4 fracturas EEII, 6 trauma tórax). 1300 nuevas personas afectadas. 250 viviendas a demoler. Ciudad nuevamente aislada por vía terrestre (nuevos deslizamientos). Más postes eléctricos caídos. Planta agua no funciona. Tuberías rotas por grietas en calles. Hombres armados con armas policiales cometiendo robos y secuestro.',
+   victimas:'3 fallecidos en rescate banco. 1300 nuevas personas afectadas. 250 viviendas a demoler.',
+   necesidades:'Maquinaria para acceso vial · Generadores · Agua potable emergencia · Captura hombres armados.',
+   fuente:'EF-1-10',statusClass:'colapsado',icon:'🔄',cx:23,cy:47},
+
+  {id:'a11',categoria:'actualizacion',ciudad:'Santa Cruz',nombre:'Santa Cruz — Actualización sismo secundario',
+   hora:'00:00 · 02 mayo',estado:'AGRAVADO',
+   descripcion:'Daños en viviendas (mayoría lesionados leves). Escuela primaria vieja COLAPSÓ (sin personal). Único camino de acceso gravemente dañado (casi imposible paso vehicular). Pozo principal de agua seriamente dañado y anegado. Puesto policía dañado (6 agentes ilesos). Edificio municipio dañado. 2 albergues abiertos (1 en casa comunitaria, 1 al aire libre). Alcalde coordinando con policía y vecinos.',
+   victimas:'Lesionados en su mayoría leves. Sin fallecidos graves reportados.',
+   necesidades:'Reparación urgente camino de acceso · Sistema de agua alternativo · Insumos para albergues · Apoyo coordinación alcaldía.',
+   fuente:'EF-1-13',statusClass:'danado',icon:'🔄',cx:11,cy:38},
+
+  {id:'a12',categoria:'actualizacion',ciudad:'El Malestar',nombre:'El Malestar — PRIMER CONTACTO',
+   hora:'01:00 · 02 mayo',estado:'PRIMER REPORTE — ACTIVO',
+   descripcion:'PRIMER CONTACTO tras horas sin comunicación. Pánico general. Viviendas del centro dañadas. Decenas de lesionados (principalmente adultos mayores). Centro salud operando (3 médicos, 2 enfermeras, triaje básico). Voluntarios organizaron albergue en predio iglesia La Santísima Trinidad (necesitan apoyar 550 personas). ALERTA CRÍTICA: Dique río Pensativo AGRIETADO — podría romperse. 34 familias aguas abajo en riesgo. Saqueos reportados. Electricidad suspendida, agua irregular.',
+   victimas:'Decenas de lesionados. 34 familias en riesgo por posible ruptura de dique.',
+   necesidades:'URGENTE: Evaluación y refuerzo dique río Pensativo · Evacuación 34 familias · Insumos albergue 550 personas · Insumos médicos · Seguridad.',
+   fuente:'EF-1-14',statusClass:'danado',icon:'🔄',cx:24,cy:36},
+];
+
+const allData = [...dataEdificios,...dataVias,...dataServicios,...dataPrioridades,...dataActualizaciones];
+const layerData = {edificios:dataEdificios,vias:dataVias,servicios:dataServicios,prioridades:dataPrioridades,actualizaciones:dataActualizaciones};
+let activeLayer='edificios', activeFilters={edificios:'all',vias:'all',servicios:'all',prioridades:'all',actualizaciones:'all'}, activeId=null;
+
+const statusLabels = {colapsado:'Colapsado',danado:'Dañado',saturado:'Saturado',operativo:'Operativo',bloqueado:'Bloqueado',comprometido:'Comprometido',suspendido:'Suspendido',desconocido:'Desconocido',critica:'CRÍTICA',alta:'ALTA'};
+const dotColors = {colapsado:'#dc2626',danado:'#ea580c',saturado:'#d97706',operativo:'#16a34a',bloqueado:'#7c3aed',comprometido:'#2563eb',suspendido:'#b91c1c',desconocido:'#4b5563',critica:'#dc2626',alta:'#ea580c'};
+
+function catLabel(layer,item){
+  if(layer==='edificios') return item.categoria==='salud'?'Establecimiento de Salud':'Edificio Público';
+  if(layer==='vias') return {vía:'Vía Terrestre',aeropuerto:'Aeropuerto',puerto:'Puerto Marítimo'}[item.categoria]||item.categoria;
+  if(layer==='servicios') return {agua:'Agua Potable',electricidad:'Energía Eléctrica',telecom:'Telecomunicaciones'}[item.categoria]||item.categoria;
+  if(layer==='actualizaciones') return item.categoria==='nueva'?'🆕 Ciudad Nueva — EF Parte I':'🔄 Actualización — EF Parte I';
+  return '';
+}
+
+function getFiltered(layer){
+  const f=activeFilters[layer];
+  if(f==='all') return layerData[layer];
+  return layerData[layer].filter(d=>{
+    if(layer==='edificios') return f==='colapsado'?d.statusClass==='colapsado':d.categoria===f;
+    if(layer==='prioridades') return d.nivel===f;
+    return d.categoria===f;
+  });
+}
+
+function renderList(layer){
+  const items=getFiltered(layer);
+  const el=document.getElementById('list-'+layer);
+  if(!el) return;
+  if(layer==='prioridades'){
+    el.innerHTML=items.map(item=>`
+      <div class="priority-card ${item.nivel==='2 — ALTA'?'alta':''} ${activeId===item.id?'active':''}" onclick="selectItem('${item.id}','${layer}')">
+        <span class="priority-num">${item.num}</span>
+        <div class="priority-accion">${item.accion}</div>
+        <div class="priority-meta">
+          <span class="priority-ciudad">${item.ciudad}</span>
+          <span class="priority-tiempo">⏱ ${item.tiempo}</span>
+          <span class="status-badge status-${item.statusClass}">${item.nivel}</span>
+        </div>
+      </div>`).join('');
+    return;
+  }
+  if(layer==='actualizaciones'){
+    el.innerHTML=items.map(item=>`
+      <div class="item-card ${activeId===item.id?'active':''}" style="border-left-color:${item.categoria==='nueva'?'#16a34a':'#d97706'}" onclick="selectItem('${item.id}','${layer}')">
+        <div class="item-city" style="color:${item.categoria==='nueva'?'#86efac':'#fde68a'}">${item.icon} ${item.ciudad}</div>
+        <div class="item-name">${item.nombre}</div>
+        <div class="item-type" style="color:#aaa;">${item.hora} · ${catLabel(layer,item)}</div>
+        <span class="status-badge status-${item.statusClass}">${item.estado}</span>
+      </div>`).join('');
+    return;
+  }
+  el.innerHTML=items.map(item=>`
+    <div class="item-card ${activeId===item.id?'active':''}" onclick="selectItem('${item.id}','${layer}')">
+      <div class="item-city">${item.icon} ${item.ciudad}</div>
+      <div class="item-name">${item.nombre}</div>
+      <div class="item-type">${catLabel(layer,item)}</div>
+      <span class="status-badge status-${item.statusClass}">${statusLabels[item.statusClass]||item.statusClass}</span>
+    </div>`).join('');
+}
+
+function renderMarkers(){
+  const layer=document.getElementById('markers-layer');
+  const img=document.getElementById('map-image');
+  const wrap=document.getElementById('map-wrapper');
+  const wW=wrap.offsetWidth,wH=wrap.offsetHeight;
+  const imgAR=img.naturalWidth/img.naturalHeight,wrapAR=wW/wH;
+  let rendW,rendH,offX,offY;
+  if(imgAR>wrapAR){rendW=wW;rendH=wW/imgAR;offX=0;offY=(wH-rendH)/2;}
+  else{rendH=wH;rendW=wH*imgAR;offX=(wW-rendW)/2;offY=0;}
+  const items=getFiltered(activeLayer);
+  layer.innerHTML=items.map(item=>{
+    const {px,py}=gridToPercent(item.cx,item.cy);
+    const left=offX+(px/100)*rendW, top=offY+(py/100)*rendH;
+    const dotClass = activeLayer==='actualizaciones' ? `dot-${item.categoria}` : `dot-${item.statusClass}`;
+    const pulse=(item.statusClass==='colapsado'||item.statusClass==='critica')?'pulse':'';
+    return `<div class="marker" style="left:${left}px;top:${top}px"
+      onmouseenter="showTooltip(event,'${item.id}')" onmouseleave="hideTooltip()"
+      onclick="selectItem('${item.id}','${activeLayer}')">
+      <div class="marker-dot ${dotClass} ${pulse}">${item.icon}</div>
+    </div>`;
+  }).join('');
+}
+
+function showTooltip(e,id){
+  const item=allData.find(d=>d.id===id); if(!item) return;
+  const t=document.getElementById('tooltip');
+  const estado=item.estadoEstructural||item.estado||item.nivel||'—';
+  const extraRow = item.hora ? `<div class="t-row"><span class="t-label">Hora:</span><span class="t-value">${item.hora}</span></div>` : '';
+  t.innerHTML=`<div class="t-city">${item.ciudad}</div>
+    <h3>${item.nombre||item.accion}</h3>
+    ${extraRow}
+    <div class="t-row"><span class="t-label">Estado:</span><span class="t-value">${estado}</span></div>
+    <div class="t-row"><span class="t-label">Fuente:</span><span class="t-value">${item.fuente}</span></div>`;
+  const wrap=document.getElementById('map-wrapper');
+  const rect=wrap.getBoundingClientRect();
+  let lx=e.clientX-rect.left+15, ly=e.clientY-rect.top-10;
+  if(lx+280>wrap.offsetWidth) lx=e.clientX-rect.left-290;
+  t.style.left=lx+'px'; t.style.top=ly+'px';
+  t.classList.add('visible');
+}
+function hideTooltip(){document.getElementById('tooltip').classList.remove('visible');}
+
+function sec(title,body,color){
+  if(!body) return '';
+  return `<div class="detail-section">
+    <div class="detail-section-title">${title}</div>
+    <div class="detail-section-body" style="${color?'color:'+color:''}">${body}</div>
+  </div>`;
+}
+
+function selectItem(id,layer){
+  activeId=id;
+  const item=allData.find(d=>d.id===id); if(!item) return;
+  renderList(layer);
+  const estado=item.estadoEstructural||item.estado||(item.nivel?`Prioridad ${item.nivel}`:'—');
+  let html=`<div style="margin-bottom:16px;">
+    <div class="detail-city">${item.ciudad}</div>
+    <div class="detail-name">${item.nombre||item.accion}</div>
+    <div class="detail-type">${catLabel(layer,item)||item.sector||''}</div>
+    <span class="status-badge status-${item.statusClass}" style="font-size:11px;padding:3px 10px;">${(statusLabels[item.statusClass]||item.statusClass).toUpperCase()}</span>
+  </div>`;
+  if(layer==='edificios'&&item.categoria==='salud'){
+    html+=sec('Capacidad Previa',item.capacidad)+sec('Estado Estructural',item.estadoEstructural)+sec('Estado Operativo',item.estadoOperativo)+sec('Personas Atendidas',item.atendidos)+sec('⚠️ Necesidades Urgentes',item.necesidades,'#fde68a');
+  } else if(layer==='edificios'){
+    html+=sec('Estado',item.estado)+sec('Descripción del Daño',item.descripcion)+sec('Impacto Institucional',item.impacto);
+  } else if(layer==='vias'){
+    html+=sec('Estado',item.estado)+sec('Descripción',item.descripcion)+sec('Impacto / Acción requerida',item.impacto);
+  } else if(layer==='servicios'){
+    html+=sec('Estado',item.estado)+sec('Descripción',item.descripcion)+sec('⚠️ Riesgo Sanitario / Operacional',item.riesgo,'#fde68a')+(item.afectados?sec('Población Afectada',item.afectados):'')+sec('Acción Urgente',item.accion);
+  } else if(layer==='actualizaciones'){
+    html+=sec('Hora del Reporte',item.hora)+sec('Estado',item.estado)+sec('Descripción de la Situación',item.descripcion)+sec('⚠️ Víctimas / Afectados',item.victimas,'#fca5a5')+sec('🚨 Necesidades Urgentes',item.necesidades,'#fde68a');
+  } else if(layer==='prioridades'){
+    html+=sec('Sector',item.sector)+sec('Descripción y Justificación',item.descripcion)+sec('Recurso Necesario',item.recurso)+sec('⏱️ Tiempo Crítico',item.tiempo,'#fde68a');
+  }
+  html+=`<div class="detail-section" style="border-top:1px solid #0f3460;padding-top:10px;margin-top:8px;">
+    <div class="detail-section-title">Fuente</div>
+    <div class="detail-section-body" style="color:#7ab8f5;">${item.fuente}</div>
+  </div>`;
+  document.getElementById('detail-content').innerHTML=html;
+  document.getElementById('detail-panel').classList.add('open');
+}
+
+function closeDetail(){
+  document.getElementById('detail-panel').classList.remove('open');
+  activeId=null; renderList(activeLayer);
+}
+
+function switchLayer(layer,btn){
+  activeLayer=layer; activeId=null;
+  document.getElementById('detail-panel').classList.remove('open');
+  document.querySelectorAll('.layer-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.layer-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+layer).classList.add('active');
+  renderMarkers(); renderStats();
+}
+
+function filterItems(f,layer,btn){
+  activeFilters[layer]=f;
+  const row=document.querySelectorAll('#panel-'+layer+' .filter-btn');
+  row.forEach(b=>b.classList.remove('active')); btn.classList.add('active');
+  renderList(layer); renderMarkers();
+}
+
+function renderStats(){
+  const counts={};
+  layerData[activeLayer].forEach(d=>{counts[d.statusClass]=(counts[d.statusClass]||0)+1;});
+  document.getElementById('stats-bar').innerHTML=Object.entries(counts).map(([k,v])=>`
+    <div class="stat-item">
+      <div class="stat-dot" style="background:${dotColors[k]||'#666'}"></div>
+      <span class="stat-label">${statusLabels[k]||k}</span>
+      <span class="stat-count">${v}</span>
+    </div>`).join('');
+}
+
+function init(){
+  ['edificios','vias','servicios','prioridades','actualizaciones'].forEach(l=>renderList(l));
+  renderMarkers(); renderStats();
+}
+window.addEventListener('resize',()=>{if(document.getElementById('map-image').complete) renderMarkers();});
+</script>
+</body>
+</html>

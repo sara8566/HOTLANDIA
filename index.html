@@ -133,6 +133,7 @@ header p  { font-size:10px; color:#aaa; margin-top:2px; }
 .hist-m2 { background:#2a1a2a; border-left:4px solid #a855f7; color:#d8b4fe; }
 .hist-m3 { background:#2a1a1a; border-left:4px solid #ef4444; color:#fca5a5; }
 .hist-m4 { background:#1a1a2a; border-left:4px solid #a855f7; color:#e9d5ff; }
+.hist-m5 { background:#0a1a0a; border-left:4px solid #22c55e; color:#bbf7d0; }
 .hist-momento-hdr .fecha { font-size:11px; opacity:0.75; margin-left:auto; }
 .hist-evento {
   margin-left:16px; padding:8px 10px 8px 14px;
@@ -175,6 +176,33 @@ header p  { font-size:10px; color:#aaa; margin-top:2px; }
 ::-webkit-scrollbar { width:5px; }
 ::-webkit-scrollbar-track { background:#0f1624; }
 ::-webkit-scrollbar-thumb { background:#1e4080; border-radius:3px; }
+
+/* MODAL REGIONES */
+.modal-regiones { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.92); z-index:999; overflow-y:auto; }
+.modal-regiones.show { display:block; }
+.modal-contenido { max-width:1400px; margin:40px auto; padding:30px; }
+.modal-header-reg { background:linear-gradient(135deg,#16213e,#0f3460); padding:20px 30px; border-radius:15px; margin-bottom:25px; display:flex; justify-content:space-between; align-items:center; }
+.modal-header-reg h2 { color:#fff; font-size:24px; margin:0; }
+.modal-close-btn { background:#e94560; color:#fff; border:none; width:35px; height:35px; border-radius:50%; font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+.regiones-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(450px, 1fr)); gap:20px; }
+.region-card-modal { background:#16213e; border-radius:12px; padding:20px; border-left:5px solid; transition:transform 0.2s; }
+.region-card-modal:hover { transform:translateY(-3px); }
+.region-card-modal.extremo { border-left-color:#dc2626; }
+.region-card-modal.alto { border-left-color:#ea580c; }
+.region-header-modal { display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; padding-bottom:12px; border-bottom:2px solid #0f3460; }
+.region-title-modal { font-size:20px; color:#7ab8f5; font-weight:800; }
+.impact-badge-modal { padding:6px 14px; border-radius:15px; font-size:11px; font-weight:800; text-transform:uppercase; }
+.impact-badge-modal.extremo { background:#dc2626; color:#fff; animation:pulse-badge 1.5s infinite; }
+.impact-badge-modal.alto { background:#ea580c; color:#fff; }
+@keyframes pulse-badge { 0%,100%{opacity:1;} 50%{opacity:0.7;} }
+.section-modal { margin-bottom:15px; }
+.section-title-modal { color:#7ab8f5; font-size:12px; font-weight:700; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px; }
+.section-content-modal { background:#0f1624; padding:10px; border-radius:6px; font-size:11px; color:#ccc; line-height:1.6; }
+.event-tag-modal { display:inline-block; background:#1e3a5f; color:#93c5fd; padding:3px 8px; border-radius:5px; margin:2px; font-size:10px; font-weight:600; }
+.critical-box { background:#2d0a0a; border:1px solid #7f1d1d; padding:10px; border-radius:6px; margin-top:8px; }
+.critical-box strong { color:#fca5a5; }
+.needs-box { background:#0a1a2a; border:1px solid:#1e4080; padding:10px; border-radius:6px; margin-top:8px; }
+.needs-box strong { color:#7ab8f5; }
 </style>
 </head>
 <body>
@@ -182,9 +210,12 @@ header p  { font-size:10px; color:#aaa; margin-top:2px; }
 <header>
   <div>
     <h1>🗺️ República Democrática de Hotlandia — Centro de Operaciones de Emergencia</h1>
-    <p>Spider View · 10 capas analíticas · Riesgo sanitario · Recursos · Decisiones COE · Fuentes: MD-5-2 al EF-1-29</p>
+    <p>Spider View · 10 capas analíticas · Riesgo sanitario · Recursos · Decisiones COE · <strong style="color:#fde68a">⚡ DATOS REGIONALES ACTUALIZADOS</strong> · Fuentes: MD-5-2 al EF-1-29</p>
   </div>
-  <span class="badge">COE · Spider</span>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <button onclick="mostrarResumenRegiones()" style="background:#e94560;color:#fff;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700;">📊 VER RESUMEN REGIONES</button>
+    <span class="badge">COE · Spider</span>
+  </div>
 </header>
 
 <div class="layout">
@@ -227,6 +258,17 @@ header p  { font-size:10px; color:#aaa; margin-top:2px; }
   </div>
 </div>
 
+<!-- MODAL RESUMEN REGIONES -->
+<div class="modal-regiones" id="modalRegiones">
+  <div class="modal-contenido">
+    <div class="modal-header-reg">
+      <h2>📊 Resumen por Regiones — Situación Actualizada</h2>
+      <button class="modal-close-btn" onclick="cerrarModalRegiones()">×</button>
+    </div>
+    <div class="regiones-grid" id="regionesGrid"></div>
+  </div>
+</div>
+
 <script>
 // ═══════════════════════════════════════════════════════
 // CITIES
@@ -249,6 +291,150 @@ const CITIES = [
   {id:"ptomara",     name:"Puerto Marañón",   region:"Región Sur",     cx:33, cy:66, severity:"desconocido"},
   {id:"ptovivo",     name:"Puerto del Vivo",  region:"Región Oeste",   cx:5,  cy:23, severity:"desconocido"},
 ];
+
+// ═══════════════════════════════════════════════════════
+// DATOS DE REGIONES - ACTUALIZADO
+// ═══════════════════════════════════════════════════════
+const REGIONES = {
+  NORTE: {
+    nombre: "REGIÓN NORTE",
+    icono: "🔵",
+    impacto: "EXTREMO",
+    eventos: ["SISMOS 7.8 + 7.5", "OLEAJE", "INCENDIO QUÍMICO"],
+    infraestructura: {
+      vial: ["Vías colapsadas", "Puentes caídos", "Acceso bloqueado"]
+    },
+    servicios: {
+      agua: "95% fuera de servicio",
+      energia: "0% operativa",
+      comunicaciones: "Colapso total"
+    },
+    salud: {
+      estado: "COLAPSADO",
+      situacion: ["Alta morbilidad", "Heridos masivos", "Fallecidos expuestos"]
+    },
+    vivienda: {
+      danada: "60%",
+      inhabitable: "30%"
+    },
+    ambiental: ["Incendio químico", "Gases tóxicos", "Vectores"],
+    seguridad: ["Pánico", "Accidentes", "Crisis sanitaria"],
+    necesidades: ["Rescate USAR", "Agua potable", "Atención médica", "Refugio temporal", "Control de incendios"]
+  },
+  ESTE: {
+    nombre: "REGIÓN ESTE",
+    icono: "🟡",
+    impacto: "ALTO",
+    eventos: ["SISMO 7.8"],
+    infraestructura: {
+      vial: ["Deslizamientos", "Vías restringidas"]
+    },
+    servicios: {
+      agua: "Interrumpida",
+      energia: "Caída",
+      comunicaciones: "Inoperantes"
+    },
+    salud: {
+      estado: "SATURADO",
+      situacion: ["Heridos masivos", "Fallecidos", "Traslado difícil"]
+    },
+    vivienda: {
+      danada: "40%",
+      inhabitable: "40%"
+    },
+    seguridad: ["Saqueos", "Disturbios", "Delincuencia"],
+    economia: ["Bancos colapsados", "Comercio cerrado"],
+    necesidades: ["Personal médico", "Seguridad", "Alimentos", "Agua potable", "Equipos de rescate"]
+  },
+  CENTRAL: {
+    nombre: "REGIÓN CENTRAL",
+    icono: "🟢",
+    impacto: "ALTO",
+    eventos: ["SISMOS 7.8 + 7.5"],
+    infraestructura: {
+      vial: ["Puentes caídos", "Vías bloqueadas"]
+    },
+    servicios: {
+      agua: "Interrumpida",
+      energia: "Suspendida",
+      comunicaciones: "Limitadas"
+    },
+    salud: {
+      estado: "SATURADO",
+      situacion: ["Heridos masivos", "Fallecidos"]
+    },
+    vivienda: {
+      estado: "Afectación masiva",
+      sin_refugio: "7,000 personas"
+    },
+    ambiental: ["Derrame de aceite"],
+    seguridad: ["Saqueos", "Fuga de reos", "Caos social"],
+    riesgos: ["Posible colapso de dique"],
+    necesidades: ["Personal médico", "Evacuación", "Agua potable", "Seguridad", "Ayuda humanitaria"]
+  },
+  OESTE: {
+    nombre: "REGIÓN OESTE",
+    icono: "🟠",
+    impacto: "EXTREMO",
+    eventos: ["SISMOS 7.8 + 7.5"],
+    infraestructura: {
+      vial: ["Agrietamientos", "Deslizamientos", "Vías dañadas"]
+    },
+    servicios: {
+      agua: "Colapsada",
+      energia: "Suspendida",
+      comunicaciones: "Incomunicados"
+    },
+    salud: {
+      estado: "CRÍTICO",
+      situacion: ["Heridos masivos", "Fallecidos altos", "IRAs", "EDAs"]
+    },
+    vivienda: {
+      afectadas: "+1,123 viviendas",
+      estado: "Miles sin hogar"
+    },
+    ambiental: ["Deslizamientos", "Lluvia intensa", "Oleaje"],
+    seguridad: ["Saqueos", "Caos social"],
+    datos_criticos: {
+      sin_refugio: "1,200 personas",
+      sin_hogar_bolivar: "10,000 personas",
+      fallecidos: "~1,000"
+    },
+    necesidades: ["40,000 L agua", "Personal médico", "SAR", "Generadores", "Alimentos", "Refugio"]
+  },
+  SUR: {
+    nombre: "REGIÓN SUR",
+    icono: "🔴",
+    impacto: "EXTREMO",
+    eventos: ["SISMOS 7.8 + 7.5"],
+    infraestructura: {
+      vial: ["Vías intransitables", "Deslizamientos", "Acceso limitado 4x4"]
+    },
+    servicios: {
+      agua: "Irregular",
+      energia: "Suspendida",
+      comunicaciones: "Incomunicados"
+    },
+    salud: {
+      estado: "COLAPSADO",
+      situacion: ["Heridos masivos", "Fallecidos", "Recursos agotados"]
+    },
+    vivienda: {
+      inhabitables: "323 viviendas",
+      estado: "Daños masivos"
+    },
+    ambiental: ["Deslizamientos masivos"],
+    seguridad: ["Fuga de reos", "Personas atrapadas"],
+    datos_criticos: {
+      afectados: "3,000 personas",
+      sin_refugio: "1,870 personas",
+      fallecidos: "218",
+      heridos: "Masivos"
+    },
+    situaciones_especiales: ["Turistas atrapados", "Personal de salud desaparecido"],
+    necesidades: ["30,000 L agua", "Personal médico", "SAR", "Helicópteros", "Alimentos", "Refugio"]
+  }
+};
 
 // ═══════════════════════════════════════════════════════
 // HISTORICAL DATA — 3 MOMENTOS POR CIUDAD
@@ -291,7 +477,8 @@ const HISTORICO = {
       {hora:"09:00", titulo:"Nuevo sismo — múltiples barrios afectados (EF-1-6)", estado:"agravado",
        desc:"B.El Centro: 250 viviendas más colapsadas, ~150 fallecidos, 300+ lesionados graves, 1200 sin hogar. B.La Merced: 50 viviendas colapsadas, ~50 fallecidos, ~200 lesionados, postes energizados en calles. B.Las Cañas: 30 viviendas destruidas, 45 lesionados, niños con bajo nivel nutricional. B.La Bola: 10 fallecidos (6 adultos + 4 niños). Centro ciudad: fosa en calle El Olmo. Rescate correos SUSPENDIDO. Nuevos deslizamientos Cerro El Temblón."},
     ],
-    m4: [{hora:"05:00–12:00",titulo:"📌 M4 — Nuevo deslizamiento y colapso hospitalario (EF-1-28/29)",estado:"agravado",desc:"Las Cañas: NUEVO DESLIZAMIENTO 07:00 hrs — 15 personas soterradas. Hospital: 100 camas llenas, nuevos pacientes en el PISO. Lluvia constante impide habilitar nueva área. IRA + hipotermia en 65 niños <5 años. EDA masiva en adultos mayores. Infecciones en extremidades. Aeropuerto CERRADO (personal abandonó). B.La Merced: 35 fallecidos, 128 lesionados. B.La Bola: 27 fallecidos, 145 lesionados. Rescate correos SUSPENDIDO. Basura acumulada en calles — riesgo ratas."}]
+    m4: [{hora:"05:00–12:00",titulo:"📌 M4 — Nuevo deslizamiento y colapso hospitalario (EF-1-28/29)",estado:"agravado",desc:"Las Cañas: NUEVO DESLIZAMIENTO 07:00 hrs — 15 personas soterradas. Hospital: 100 camas llenas, nuevos pacientes en el PISO. Lluvia constante impide habilitar nueva área. IRA + hipotermia en 65 niños <5 años. EDA masiva en adultos mayores. Infecciones en extremidades. Aeropuerto CERRADO (personal abandonó). B.La Merced: 35 fallecidos, 128 lesionados. B.La Bola: 27 fallecidos, 145 lesionados. Rescate correos SUSPENDIDO. Basura acumulada en calles — riesgo ratas."}],
+    m5: [{hora:"05:00–12:00 · 03 mayo",titulo:"📌 M5 — Lluvia constante · Nuevo deslizamiento · Hospital al límite (EF-1-28/29)",estado:"agravado",desc:"B.El Centro: 250 viviendas colapsadas confirmadas. 25 adultos rescatados (7 mujeres). 125 cuerpos aún atrapados — se valora ABANDONAR el rescate. 500/1,200 damnificados en cancha de fútbol; 700 a la intemperie. B.La Merced: 35 fallecidos confirmados, 250 viviendas dañadas, 128 lesionados. Las Cañas 08:00: NUEVO DESLIZAMIENTO — 15 soterrados intentando recuperar pertenencias. B.La Bola: 27 fallecidos adultos, 145 lesionados, 65 niños <5 años con IRA e hipotermia, estado febril + desnutrición. EDA en adultos mayores por ingesta agua lluvia. 10:00 Centro ciudad: decenas con problemas respiratorios, infecciones en extremidades inferiores. Aeropuerto: personal ABANDONÓ instalaciones. 11:00: 100 camas llenas — nuevos pacientes en el PISO. 12:00: basura sin recolectar desde el sismo — perros dispersando desechos — RATAS inminentes."}]
   },
   spr: {
     m1: [
@@ -306,7 +493,8 @@ const HISTORICO = {
       {hora:"04:30", titulo:"Nuevo sismo — agravamiento (EF-1-8)", estado:"agravado",
        desc:"23 fallecidos de los 235 anteriores (12 niños <5 años). El Talud: corregido a 40 viviendas sepultadas. 4 ancianos fallecidos recuperados — morgue temporal en casa comunitaria. Síndico no localizable. 2 instalaciones de alimentos saqueadas. Autobús 'Estrella del Norte' confirmado, víctimas probablemente fallecidas sin maquinaria."},
     ],
-    m4: [{hora:"23:30",titulo:"📌 M4 — Autobús soterrado confirmado (EF-1-26)",estado:"agravado",desc:"Autobús Estrella del Norte: 75 personas soterradas, rescatistas trabajando con palas (muy lento — víctimas probablemente fallecidas). Toldos B.La Chiche AL LÍMITE (800 personas). El Talud: terreno inestable, 67 desaparecidos sin rescate posible aún. 2 cadáveres con lesiones de bala en calles. Malos olores y moscas por cadáveres sin rescatar. B.San Judas: 26 nuevos fallecidos."}]
+    m4: [{hora:"23:30",titulo:"📌 M4 — Autobús soterrado confirmado (EF-1-26)",estado:"agravado",desc:"Autobús Estrella del Norte: 75 personas soterradas, rescatistas trabajando con palas (muy lento — víctimas probablemente fallecidas). Toldos B.La Chiche AL LÍMITE (800 personas). El Talud: terreno inestable, 67 desaparecidos sin rescate posible aún. 2 cadáveres con lesiones de bala en calles. Malos olores y moscas por cadáveres sin rescatar. B.San Judas: 26 nuevos fallecidos."}],
+    m5: [{hora:"23:30 · 02 mayo",titulo:"📌 M5 — Autobús Estrella del Norte: 75 soterrados (EF-1-26)",estado:"agravado",desc:"B.El Centro: 45 adicionales a salvo (sin lesiones graves), 23 con lesiones severas trasladados, 12 fallecidos esperando identificación en patio del centro de salud. B.San Judas: 54 más evacuadas, 15 con lesiones graves al dispensario, 26 NUEVOS FALLECIDOS. B.La Chiche: toldos AL LÍMITE (800 personas) — situación tensa. Cadáveres sin rescatar = malos olores y moscas. Familias reclamando rescate. El Talud: 67 desaparecidos, terreno inestable — NO SE PUEDE INTERVENIR hasta estabilizar. Inseguridad: atracos activos, 2 cadáveres con lesiones de bala en calle Las Oscuranas. Autobús Estrella del Norte CONFIRMADO: 75 pasajeros soterrados bajo paredón — solo partes del motor visibles. Rescatistas trabajando con palas — víctimas probablemente fallecidas."}]
   },
   analquito: {
     m1: [
@@ -351,7 +539,8 @@ const HISTORICO = {
       {hora:"01:00", titulo:"PRIMER CONTACTO — 02 mayo (EF-1-14)", estado:"nuevo",
        desc:"Pánico general. Viviendas del centro dañadas. Decenas de lesionados (principalmente adultos mayores). Centro salud con 3 médicos y 2 enfermeras con triaje básico. Voluntarios organizaron albergue (550 personas). ALERTA CRÍTICA: Dique río Pensativo AGRIETADO — 34 familias aguas abajo en riesgo. Saqueos reportados (presuntamente de El Ronquido). Electricidad suspendida. Agua irregular."},
     ],
-    m4: [{hora:"14:00",titulo:"📌 M4 — Dique a punto de dinamitar (EF-1-22)",estado:"critico",desc:"Dique Río Pensativo SERIAMENTE AFECTADO — autoridades decidieron DINAMITARLO. 180 personas evacuadas de riberas aguas abajo. 210 viviendas afectadas. 350 lesionados (180 graves con traumatismos severos). 475 personas en albergue iglesia AL LÍMITE. EDA y diarrea en albergue. IRA y fiebre en niños. Hundimientos en calles por ruptura tuberías."}]
+    m4: [{hora:"14:00",titulo:"📌 M4 — Dique a punto de dinamitar (EF-1-22)",estado:"critico",desc:"Dique Río Pensativo SERIAMENTE AFECTADO — autoridades decidieron DINAMITARLO. 180 personas evacuadas de riberas aguas abajo. 210 viviendas afectadas. 350 lesionados (180 graves con traumatismos severos). 475 personas en albergue iglesia AL LÍMITE. EDA y diarrea en albergue. IRA y fiebre en niños. Hundimientos en calles por ruptura tuberías."}],
+    m5: [{hora:"14:00 · 02 mayo",titulo:"📌 M5 — Dique Río Pensativo: decisión de dinamitar (EF-1-22)",estado:"critico",desc:"210 viviendas seriamente afectadas. 350 lesionados (180 de GRAVEDAD — traumatismos severos por objetos contundentes). Centro de salud: triaje activo pero sin capacidad humana ni material. Necesidades: vendas · apósitos · férulas · soluciones salinas · agujas sutura · anestésicos · antibióticos · lámparas · gasas. Policía controlando flujo de retorno a viviendas. Más saqueos y robos. Albergue iglesia AL LÍMITE: 475 personas — escasea agua — diarrea activa — niños con cuadros respiratorios y fiebre. DIQUE RÍO PENSATIVO: seriamente afectado — DECISIÓN TOMADA: evacuar 180 personas aguas abajo + DINAMITAR el dique. Hundimientos en calles por ruptura de tuberías."}]
   },
   santacruz: {
     m1: [
@@ -366,7 +555,8 @@ const HISTORICO = {
       {hora:"00:00", titulo:"Nuevo sismo — 02 mayo (EF-1-13)", estado:"agravado",
        desc:"Daños en viviendas (mayoría leves). Escuela primaria vieja colapsó (sin personal). Único camino de acceso gravemente dañado — casi imposible paso vehicular. Pozo principal de agua seriamente dañado y anegado. 2 albergues abiertos. Alcalde coordinando con policía y vecinos."},
     ],
-    m4: [{hora:"02:00",titulo:"📌 M4 — Situación controlada (EF-1-27)",estado:"info",desc:"67 viviendas afectadas. 300 desamparadas. 126 lesionados (contusiones — mayoría leve). 0 fallecidos reportados. 2 albergues operativos (bodega municipal + casa comunidad). Vecinos organizados racionando agua. Edificio municipio dañado pero autoridades activas. Necesidades: agua potable, frazadas, artículos cocina, alimentos bebés, medicamentos, lámparas keroseno, toldos, juguetes."}]
+    m4: [{hora:"02:00",titulo:"📌 M4 — Situación controlada (EF-1-27)",estado:"info",desc:"67 viviendas afectadas. 300 desamparadas. 126 lesionados (contusiones — mayoría leve). 0 fallecidos reportados. 2 albergues operativos (bodega municipal + casa comunidad). Vecinos organizados racionando agua. Edificio municipio dañado pero autoridades activas. Necesidades: agua potable, frazadas, artículos cocina, alimentos bebés, medicamentos, lámparas keroseno, toldos, juguetes."}],
+    m5: [{hora:"02:00 · 03 mayo",titulo:"📌 M5 — Situación estable y organizada (EF-1-27)",estado:"info",desc:"67 viviendas afectadas. 300 personas desamparadas. 126 lesionados: 75 H adultos + 45 M adultas + 6 niños — principalmente contusiones por techos. 0 fallecidos y 0 desaparecidos reportados. Municipio dañado pero autoridades ACTIVAS: 2 albergues organizados (bodega municipal + casa comunidad). Vecinos racionando agua priorizando niños y ancianos. Necesidades: agua potable · frazadas · artículos de cocina · alimentos bebés · medicamentos · lámparas keroseno · velas · toldos · juguetes. CIUDAD MÁS ORGANIZADA — modelo de respuesta comunitaria."}]
   },
   capital: {
     m1: [{hora:"—", titulo:"Sin reportes de daños (MD-5-2/5-8)", estado:"info", desc:"La Capital no fue incluida en los reportes de afectación directa. Aeropuerto presumiblemente operativo. Puerto del Muerto (noreste) almacena el 60% del petróleo del país — estado desconocido."}],
@@ -389,7 +579,8 @@ const HISTORICO = {
       {hora:"06:30", titulo:"🆕 NUEVO — Sismo + Oleaje / Tsunami (EF-1-5)", estado:"critico",
        desc:"45 viviendas desaparecidas completamente bajo las olas. Todos sus habitantes presuntamente ahogados. Puesto policía portuaria arrasado: 4 agentes desaparecidos, 2 embarcaciones perdidas. Calles anegadas. Muchas viviendas derrumbadas. Centro de salud colapsado parcialmente. Puerto El Vivo seriamente afectado: lanchas y embarcaciones camaroneras perdidas."},
     ],
-    m4: [{hora:"14:30–19:00",titulo:"📌 M4 — Catástrofe epidémica (EF-1-23)",estado:"critico",desc:"196 cuerpos confirmados (122+74 nuevos del mar). Riesgo de entierro sin identificación. 2,500+ sobrevivientes en estado CRÍTICO. EDA masiva en niños con deshidratación severa — condición crítica. Madres dando agua salobre (empeora condición). Sin comida desde hace 20+ horas. Pozos ANEGADOS. Red eléctrica COLAPSADA. Mosquitos masivos — riesgo dengue emergente. Material médico agotado desde hace horas."}]
+    m4: [{hora:"14:30–19:00",titulo:"📌 M4 — Catástrofe epidémica (EF-1-23)",estado:"critico",desc:"196 cuerpos confirmados (122+74 nuevos del mar). Riesgo de entierro sin identificación. 2,500+ sobrevivientes en estado CRÍTICO. EDA masiva en niños con deshidratación severa — condición crítica. Madres dando agua salobre (empeora condición). Sin comida desde hace 20+ horas. Pozos ANEGADOS. Red eléctrica COLAPSADA. Mosquitos masivos — riesgo dengue emergente. Material médico agotado desde hace horas."}],
+    m5: [{hora:"14:30–19:00 · 02 mayo",titulo:"📌 M5 — Catástrofe epidémica total (EF-1-23)",estado:"critico",desc:"14:30: Aguas en calma — cientos de cadáveres en playa. 75 viviendas cerca de playa DESAPARECIDAS — sin sobrevivientes. Policía sucumbida ante el desastre. Material médico agotado hace horas. 240 viviendas dañadas/anegadas. 1,200 personas sin comida 20+ horas. Pozos anegados — agua potable imposible. 15:00: EDA masiva en niños — deshidratación severa — niños en condición CRÍTICA. Postes eléctricos colapsados. 16:00: 122 cuerpos contabilizados (45 H · 65 M · 12 niños). 17:00: 2,500+ sobrevivientes en estado crítico — EDA + IRA + infecciones + fiebre — no se puede hacer nada. 18:00: 74 cadáveres ADICIONALES = 196 total — considerando entierros sin identificación. 19:00: basura por toneladas + MILLARES de mosquitos activos — riesgo DENGUE INMINENTE. Madres dando agua salobre a niños deshidratados — empeora cuadro. Infecciones generalizadas en heridas con fiebre."}]
   },
   montanitas: {
     m1: [{hora:"—", titulo:"Sin datos previos al sismo secundario", estado:"info", desc:"Montañitas no aparece en los reportes del 29 de abril."}],
@@ -398,7 +589,8 @@ const HISTORICO = {
       {hora:"21:00", titulo:"🆕 NUEVO — Ciudad completamente aislada (EF-1-11)", estado:"critico",
        desc:"Ciudad aislada totalmente por deslizamientos de material rocoso. 250 viviendas inhabitables. 2 grupos de turistas atrapados en bosques sin contacto. Registro civil colapsado (4 empleados desaparecidos, presumiblemente fallecidos). Estación policía con daños severos: 6 agentes lesionados, 4 reos escapados. 1500+ heridos con atención muy limitada — 1 médico y 2 enfermeras de paradero desconocido."},
     ],
-    m4: [{hora:"21:00",titulo:"📌 M4 — 25 muertos por falta de atención (EF-1-24)",estado:"critico",desc:"25 personas fallecidas de las 1,500 heridas por falta de tratamiento adecuado. Unidad de salud COLAPSADA TOTALMENTE — no presta ningún servicio. Heridos SIN ATENCIÓN. Riesgo Tétanos y otras infecciones graves. 75 nuevas viviendas destruidas. 300 nuevas personas damnificadas sin albergue. Ciudad sigue AISLADA."}]
+    m4: [{hora:"21:00",titulo:"📌 M4 — 25 muertos por falta de atención (EF-1-24)",estado:"critico",desc:"25 personas fallecidas de las 1,500 heridas por falta de tratamiento adecuado. Unidad de salud COLAPSADA TOTALMENTE — no presta ningún servicio. Heridos SIN ATENCIÓN. Riesgo Tétanos y otras infecciones graves. 75 nuevas viviendas destruidas. 300 nuevas personas damnificadas sin albergue. Ciudad sigue AISLADA."}],
+    m5: [{hora:"21:00 · 02 mayo",titulo:"📌 M5 — 25 fallecidos por falta de atención · Tétanos inminente (EF-1-24)",estado:"critico",desc:"Ciudad AISLADA — deslizamientos Cerro El Temblón II continúan. 75 viviendas adicionales destruidas. 300 nuevos damnificados sin lugar de albergue claro. De las 1,500 personas heridas: 25 YA FALLECIERON por falta de tratamiento adecuado. Unidad de salud COLAPSADA TOTALMENTE — no presta ningún servicio. Heridos SIN ATENCIÓN. RIESGO CRÍTICO de Tétanos y otras infecciones. Nuevas necesidades urgentes: personal médico · artículos de higiene · material médico trauma · diesel · toldos · camillas · ambulancias · bolsas para cadáveres."}]
   },
   pampidos: {
     m1: [{hora:"—", titulo:"Sin datos del 29 de abril", estado:"info", desc:"Pámpidos no aparece en reportes iniciales."}],
@@ -407,7 +599,8 @@ const HISTORICO = {
       {hora:"22:30", titulo:"🆕 NUEVO — Sismo en madrugada (EF-1-12)", estado:"grave",
        desc:"Mayoría de habitantes dormía. Turistas en bares sufrieron lesiones. Sin evacuaciones ordenadas. 5 agentes policía fallecidos. 1 vehículo policial destruido. Iglesia La Merced (patrimonio nacional): seriamente dañada con INCENDIO ACTIVO en estructura de madera. Sin energía eléctrica. Agua potable irregular. Cientos de turistas a la intemperie sin agua ni alimentos desde la madrugada."},
     ],
-    m4: [{hora:"22:30",titulo:"📌 M4 — Incendio en expansión (EF-1-25)",estado:"critico",desc:"Incendio iglesia La Merced: EN EXPANSIÓN, amenaza casas coloniales vecinas. Voluntarios con quemaduras intentando apagar sin medios. Canales baños termales ROTOS — agua a alta temperatura en calles (peligro). 600 sin albergue (17% niños <5 años). 123 viviendas coloniales afectadas. Sin energía ni agua potable. Caminos dañados (turistas retornaron). Saqueo de abarrotería turística."}]
+    m4: [{hora:"22:30",titulo:"📌 M4 — Incendio en expansión (EF-1-25)",estado:"critico",desc:"Incendio iglesia La Merced: EN EXPANSIÓN, amenaza casas coloniales vecinas. Voluntarios con quemaduras intentando apagar sin medios. Canales baños termales ROTOS — agua a alta temperatura en calles (peligro). 600 sin albergue (17% niños <5 años). 123 viviendas coloniales afectadas. Sin energía ni agua potable. Caminos dañados (turistas retornaron). Saqueo de abarrotería turística."}],
+    m5: [{hora:"22:30 · 02 mayo",titulo:"📌 M5 — Incendio La Merced en expansión · Canales termales rotos (EF-1-25)",estado:"critico",desc:"Canales baños termales ROTOS — escapes de agua a alta temperatura en calles (peligro de quemaduras). 123 viviendas coloniales afectadas. 600 sin albergue (102 niños <5 años = 17%, 72 mujeres adultas = 12%). Puesto de socorro en parque central: 3 estudiantes de medicina + voluntarios — toldos, sábanas y colchones. Politraumatizados necesitan atención especializada y traslado a capital (convenio con Alejandría INOPERANTE). Morgue temporal con 5 agentes fallecidos. Sin energía eléctrica (postes caídos). Sin agua potable (tuberías rotas) — personas en PÁNICO. Incendio La Merced: EN EXPANSIÓN hacia casas coloniales vecinas. Voluntarios con quemaduras. Turistas retornaron (caminos dañados). Saqueo de abarrotería turística."}]
   },
   bolivar: {
     m1: [{hora:"—", titulo:"Sin datos del 29 de abril", estado:"info", desc:"Bolívar no aparece en reportes iniciales."}],
@@ -666,10 +859,10 @@ const CITY_DATA = {
 
 
 const AFECTADOS = {
-  alejandria:  {lesionados:"Cientos (>300 documentados)", afectados:"1,500+ familias damnificadas acumuladas", viviendas:"Múltiples colapsadas (escuelas, edificios públicos)", fallecidos:"3 brigadistas + varios en escuelas", m4_estado:"CRÍTICA"},
-  tosteno:     {lesionados:"128 B.La Merced · 145 B.La Bola · IRA en 65 niños <5 años · EDA masiva", afectados:"500 en cancha fútbol · 700 a la intemperie · total 1,500+", viviendas:"250 colapsadas B.El Centro · 250 dañadas B.La Merced", fallecidos:"25 rescatados de 150 estimados B.El Centro · 35 B.La Merced · 27 B.La Bola · 15 soterrados Las Cañas", m4_estado:"CRÍTICA"},
+  alejandria:  {lesionados:"Cientos (>300 documentados)", afectados:"~2,200 familias damnificadas acumuladas (700 M1 + 1,500 adicionales M3 — ⚠️ corregido)", viviendas:"Múltiples colapsadas (escuelas, edificios públicos)", fallecidos:"3 brigadistas + varios en escuelas", m4_estado:"CRÍTICA"},
+  tosteno:     {lesionados:"128 B.La Merced · 145 B.La Bola · 65 niños <5 años con IRA + hipotermia · EDA masiva · infecciones extremidades inferiores", afectados:"500 en cancha fútbol · 700 a la intemperie · total 1,500+", viviendas:"250 colapsadas B.El Centro · 250 dañadas B.La Merced", fallecidos:"25 rescatados de 150 estimados B.El Centro · 35 B.La Merced · 35 B.La Bola (⚠️ corregido de 10 a 35) · 15 soterrados Las Cañas · 125 cuerpos aún atrapados", m4_estado:"CRÍTICA"},
   spr:         {lesionados:"Decenas graves trasladadas al centro de salud", afectados:"800+ bajo toldos B.La Chiche · 67 desaparecidos El Talud", viviendas:"Múltiples colapsadas", fallecidos:"26 nuevos B.San Judas · 12 esperando identificación · 2 con lesiones de bala · 67 desap. El Talud", m4_estado:"CRÍTICA"},
-  analquito:   {lesionados:"Cientos — centro de salud colapsado", afectados:"300 nuevas damnificadas (total acumulado muy alto)", viviendas:"76 nuevas afectadas (total acumulado alto)", fallecidos:"1 torturado (presunto secuestrado) + anteriores", m4_estado:"CRÍTICA"},
+  analquito:   {lesionados:"Cientos — centro de salud colapsado", afectados:"875 adicionales confirmadas en M2 (⚠️ corregido de 300 a 875) · Total acumulado: 3,575 personas en riesgo", viviendas:"76 nuevas afectadas (total acumulado alto)", fallecidos:"1 torturado (presunto secuestrado) + anteriores", m4_estado:"CRÍTICA"},
   chanmico:    {lesionados:"900 nuevas con lesiones (Los Zánganos 134 · La Pedrera 78 · El Simio 80)", afectados:"900 nuevas damnificadas (total acumulado >2,000)", viviendas:"Sin nuevo dato (total previo alto)", fallecidos:"23 anteriores + 4 rescatistas atrapados", m4_estado:"CRÍTICA"},
   elmalestar:  {lesionados:"350 (180 de gravedad con traumatismos severos)", afectados:"475 en albergue iglesia (AL LÍMITE)", viviendas:"210 seriamente afectadas", fallecidos:"Sin nuevo reporte", m4_estado:"GRAVE"},
   elcharco:    {lesionados:"726+ en unidad salud: 370 trauma tórax · 162 TCE · 127 niños TCE · 9 partos · 25 fx expuestas", afectados:"~2,075 damnificados: La Cruz 375 · San Juan 500 · El Centro 1,200", viviendas:"~454: La Cruz 101 · San Juan 123 · El Centro 230", fallecidos:"~150+: La Cruz 35 · San Juan 28 · El Centro 75 · centro salud 18", m4_estado:"CRÍTICA"},
@@ -1306,6 +1499,7 @@ function renderHistorico(cityId){
     {key:"m2", label:"📌 Momento 2 — 30 de abril", cls:"hist-m2", fecha:"Primeras 24 hrs"},
     {key:"m3", label:"📌 Momento 3 — 1 y 2 de mayo", cls:"hist-m3", fecha:"Nuevo sismo / Escalada"},
     {key:"m4", label:"📌 Momento 4 — 2 y 3 de mayo", cls:"hist-m4", fecha:"EF Parte II / Epidemias"},
+    {key:"m5", label:"📌 Momento 5 — 2 y 3 de mayo (Parte II)", cls:"hist-m5", fecha:"EF-1-22 al EF-1-29 · Verificado"},
   ];
   return momentos.map((m,idx)=>{
     const eventos=hist[m.key]||[];
@@ -1354,6 +1548,140 @@ function renderStats(){
 // ─── INIT ─────────────────────────────────────────────────────
 function initMap(){ renderSidebar(); renderMarkers(); }
 window.addEventListener("resize",()=>{ if(document.getElementById("map-image").complete) renderMarkers(); });
+
+// ─── MODAL REGIONES ───────────────────────────────────────────
+function mostrarResumenRegiones(){
+  const modal = document.getElementById("modalRegiones");
+  const grid = document.getElementById("regionesGrid");
+  
+  let html = "";
+  for(const [key, reg] of Object.entries(REGIONES)){
+    const impactClass = reg.impacto === "EXTREMO" ? "extremo" : "alto";
+    
+    html += `
+      <div class="region-card-modal ${impactClass}">
+        <div class="region-header-modal">
+          <div class="region-title-modal">${reg.icono} ${reg.nombre}</div>
+          <div class="impact-badge-modal ${impactClass}">${reg.impacto}</div>
+        </div>
+        
+        <div class="section-modal">
+          <div class="section-title-modal">🌊 Eventos</div>
+          <div class="section-content-modal">
+            ${reg.eventos.map(e => `<span class="event-tag-modal">${e}</span>`).join('')}
+          </div>
+        </div>
+        
+        <div class="section-modal">
+          <div class="section-title-modal">🚧 Infraestructura Vial</div>
+          <div class="section-content-modal">
+            ${reg.infraestructura.vial.join(' • ')}
+          </div>
+        </div>
+        
+        <div class="section-modal">
+          <div class="section-title-modal">⚡ Servicios Básicos</div>
+          <div class="section-content-modal">
+            <strong>💧 Agua:</strong> ${reg.servicios.agua}<br>
+            <strong>🔌 Energía:</strong> ${reg.servicios.energia}<br>
+            <strong>📡 Comunicaciones:</strong> ${reg.servicios.comunicaciones}
+          </div>
+        </div>
+        
+        <div class="section-modal">
+          <div class="section-title-modal">🏥 Salud</div>
+          <div class="section-content-modal">
+            <strong>Estado:</strong> ${reg.salud.estado}<br>
+            ${reg.salud.situacion.join(' • ')}
+          </div>
+        </div>
+        
+        <div class="section-modal">
+          <div class="section-title-modal">🏠 Vivienda</div>
+          <div class="section-content-modal">
+            ${reg.vivienda.danada ? `<strong>Dañada:</strong> ${reg.vivienda.danada}<br>` : ''}
+            ${reg.vivienda.inhabitable ? `<strong>Inhabitable:</strong> ${reg.vivienda.inhabitable}<br>` : ''}
+            ${reg.vivienda.afectadas ? `<strong>Afectadas:</strong> ${reg.vivienda.afectadas}<br>` : ''}
+            ${reg.vivienda.inhabitables ? `<strong>Inhabitables:</strong> ${reg.vivienda.inhabitables}<br>` : ''}
+            ${reg.vivienda.estado ? `<strong>${reg.vivienda.estado}</strong><br>` : ''}
+            ${reg.vivienda.sin_refugio ? `<strong>Sin refugio:</strong> ${reg.vivienda.sin_refugio}` : ''}
+          </div>
+        </div>
+        
+        ${reg.ambiental ? `
+        <div class="section-modal">
+          <div class="section-title-modal">🌍 Ambiental</div>
+          <div class="section-content-modal">
+            ${reg.ambiental.join(' • ')}
+          </div>
+        </div>` : ''}
+        
+        ${reg.seguridad ? `
+        <div class="section-modal">
+          <div class="section-title-modal">🛡️ Seguridad</div>
+          <div class="section-content-modal">
+            ${reg.seguridad.join(' • ')}
+          </div>
+        </div>` : ''}
+        
+        ${reg.economia ? `
+        <div class="section-modal">
+          <div class="section-title-modal">💼 Economía</div>
+          <div class="section-content-modal">
+            ${reg.economia.join(' • ')}
+          </div>
+        </div>` : ''}
+        
+        ${reg.riesgos ? `
+        <div class="section-modal">
+          <div class="section-title-modal">⚠️ Riesgos Adicionales</div>
+          <div class="section-content-modal">
+            ${reg.riesgos.join(' • ')}
+          </div>
+        </div>` : ''}
+        
+        ${reg.datos_criticos ? `
+        <div class="critical-box">
+          <strong>📊 DATOS CRÍTICOS:</strong><br>
+          ${reg.datos_criticos.afectados ? `👥 ${reg.datos_criticos.afectados} afectados<br>` : ''}
+          ${reg.datos_criticos.sin_refugio ? `🏕️ ${reg.datos_criticos.sin_refugio} sin refugio<br>` : ''}
+          ${reg.datos_criticos.sin_hogar_bolivar ? `🏠 ${reg.datos_criticos.sin_hogar_bolivar} sin hogar en Bolívar<br>` : ''}
+          ${reg.datos_criticos.fallecidos ? `⚰️ ${reg.datos_criticos.fallecidos} fallecidos<br>` : ''}
+          ${reg.datos_criticos.heridos ? `🤕 Heridos ${reg.datos_criticos.heridos}` : ''}
+        </div>` : ''}
+        
+        ${reg.situaciones_especiales ? `
+        <div class="critical-box">
+          <strong>⚠️ SITUACIONES ESPECIALES:</strong><br>
+          ${reg.situaciones_especiales.join(' • ')}
+        </div>` : ''}
+        
+        <div class="needs-box">
+          <strong>🆘 NECESIDADES URGENTES:</strong><br>
+          ${reg.necesidades.join(' • ')}
+        </div>
+      </div>
+    `;
+  }
+  
+  grid.innerHTML = html;
+  modal.classList.add("show");
+  document.body.style.overflow = "hidden";
+}
+
+function cerrarModalRegiones(){
+  const modal = document.getElementById("modalRegiones");
+  modal.classList.remove("show");
+  document.body.style.overflow = "auto";
+}
+
+// Cerrar modal con ESC
+document.addEventListener("keydown", (e) => {
+  if(e.key === "Escape"){
+    cerrarModalRegiones();
+  }
+});
+
 </script>
 </body>
 </html>
